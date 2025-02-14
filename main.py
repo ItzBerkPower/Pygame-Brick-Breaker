@@ -146,7 +146,26 @@ while running:
     paddle.draw()
     for brick in active_bricks:
         brick.draw()
+    
 
+
+    # Game over condition
+    if ball.y >= SCREEN_HEIGHT:
+        font = pygame.font.SysFont(None, 74)
+        text = font.render("GAME OVER", True, WHITE)
+        screen.blit(text, (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 2))
+        pygame.display.flip()
+        pygame.time.wait(3000)
+        running = False
+
+    # Win condition
+    if not active_bricks:
+        font = pygame.font.SysFont(None, 74)
+        text = font.render("YOU WIN!", True, WHITE)
+        screen.blit(text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT // 2))
+        pygame.display.flip()
+        pygame.time.wait(3000)
+        running = False
 
 
 
