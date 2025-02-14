@@ -94,6 +94,10 @@ class Brick:
         pygame.draw.rect(screen, BLUE, inner_rect) # Draw the inner rectangle (Just fill with blue)
 
 
+
+# Variables:
+score = 0
+
 # Initialising ball and paddle objects
 ball = Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)
 paddle = Paddle((SCREEN_WIDTH - 100) // 2, SCREEN_HEIGHT - 30, 100, 20, 8)
@@ -119,6 +123,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    
+
         
 
     # Moving paddle
@@ -138,6 +144,7 @@ while running:
         if brick.rect.collidepoint(ball.x, ball.y):
             active_bricks.remove(brick)
             ball.speed_y *= -1
+            score += 10 # Award 10 points per brick
             break
 
 
@@ -168,6 +175,10 @@ while running:
         running = False
 
 
+    # Display the score
+    font = pygame.font.SysFont(None, 36)
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    screen.blit(score_text, (10, 10))
 
     # Update display
     pygame.display.flip()
