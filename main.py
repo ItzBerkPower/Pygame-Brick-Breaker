@@ -15,6 +15,8 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 
+# Initialise clock
+clock = pygame.time.Clock()
 
 # Ball Class
 class Ball:
@@ -117,12 +119,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    
-    # Drawing game objects:
-    ball.draw()
-    paddle.draw()
-    for brick in active_bricks:
-        brick.draw()
+        
 
     # Moving paddle
     key_pressed = pygame.key.get_pressed()
@@ -131,8 +128,31 @@ while running:
     # Moving ball
     ball.move()
 
+    # Ball collision with paddle (Only the top)
+    if (paddle.x < ball.x < paddle.x + paddle.width and paddle.y < ball.y + ball.radius < paddle.y + paddle.height):
+        ball.speed_y *= -1
+
+    
+    # Ball collision with bricks
+    for brick in active_bricks[:]:
+        if brick.rect.collidepoint(ball.x, ball.y):
+            active_bricks.remove(brick)
+            ball.speed_y *= -1
+            break
+
+
+    # Drawing game objects:
+    ball.draw()
+    paddle.draw()
+    for brick in active_bricks:
+        brick.draw()
+
+
+
+
     # Update display
     pygame.display.flip()
+    clock.tick(60)
 
 # Quit Pygame
 pygame.quit()
