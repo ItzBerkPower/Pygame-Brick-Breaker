@@ -139,9 +139,9 @@ while running:
         ball.speed_y *= -1
 
     
-    # Ball collision with bricks
+    # Ball collision with bricks (Any part of brick)
     for brick in active_bricks[:]:
-        if brick.rect.collidepoint(ball.x, ball.y):
+        if brick.rect.colliderect(pygame.Rect(ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2)):
             active_bricks.remove(brick)
             ball.speed_y *= -1
             score += 10 # Award 10 points per brick
@@ -178,7 +178,7 @@ while running:
     # Display the score
     font = pygame.font.SysFont(None, 36)
     score_text = font.render(f"Score: {score}", True, WHITE)
-    screen.blit(score_text, (10, 10))
+    screen.blit(score_text, (10, SCREEN_HEIGHT - 40))
 
     # Update display
     pygame.display.flip()
