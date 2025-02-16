@@ -80,6 +80,28 @@ class Paddle:
 
 
 
+# Power-Up Class
+class PowerUp:
+    def __init__(self, x, y):
+        self.rect = pygame.Rect(x, y, 20, 20)  # Power-up rect object (Small red square)
+        self.active = True # Is on the map or not
+
+    def move(self):
+        self.rect.y += 2  # Move the power-up down the screen (Down the screen is positive TOOK SO LONG TO UNDERSTAND)
+
+    # Draw the power-up on the screen
+    def draw(self):
+        if self.active:
+            pygame.draw.rect(screen, RED, self.rect)
+
+    # Check the collision of the power-up with the paddle
+    def check_collision(self, paddle):
+        if self.active and self.rect.colliderect(paddle.x, paddle.y, paddle.width, paddle.height): # If it is on map and collides with paddle
+            self.active = False # Delete the powerup
+            return True # (So new ball can be spawned)
+        return False
+
+
 
 # Brick Class
 class Brick:
@@ -95,8 +117,8 @@ class Brick:
 
 
 
-# Variables:
-score = 0
+
+
 
 # Initialising ball and paddle objects
 ball = Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)
@@ -112,6 +134,10 @@ for row in range(brick_rows):
         brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height)
         active_bricks.append(brick)
 
+# Variables:
+score = 0
+powerups = [] # List of power-ups
+balls = [ball] # List of all balls
 
 
 # Game loop
@@ -131,39 +157,75 @@ while running:
     key_pressed = pygame.key.get_pressed()
     paddle.move(key_pressed)
 
-    # Moving ball
-    ball.move()
+    # Moving all the balls
+    for ball in balls:
+        ball.move()
 
-    # Ball collision with paddle (Only the top)
-    if (paddle.x < ball.x < paddle.x + paddle.width and paddle.y < ball.y + ball.radius < paddle.y + paddle.height):
-        ball.speed_y *= -1
+    # Balls collision with paddle (Only the top)
+    for ball in balls:
+        if (paddle.x < ball.x < paddle.x + paddle.width and paddle.y < ball.y + ball.radius < paddle.y + paddle.height):
+            ball.speed_y *= -1
 
     
     # Ball collision with bricks (Any part of brick)
-    for brick in active_bricks[:]:
-        if brick.rect.colliderect(pygame.Rect(ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2)):
-            active_bricks.remove(brick)
-            ball.speed_y *= -1
-            score += 10 # Award 10 points per brick
-            break
+    for ball in balls:
+        for brick in active_bricks[:]:
+            if brick.rect.colliderect(pygame.Rect(ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2)):
+                active_bricks.remove(brick)
+                ball.speed_y *= -1
+                score += 10 # Award 10 points per brick
+
+                # Spawning the power-up
+                if random.randint(1,8) == 1: # 1/8 chance of spawning
+                    powerup = PowerUp(brick.rect.x + brick_width // 2, brick.rect.y + brick_height // 2)
+                    powerups.append(powerup)
+                break
+    
+
+    # Move and draw power-ups
+    for powerup in powerups[:]:
+        powerup.move()
+        powerup.draw()
+
+        # Check if power-up collides with paddle
+        if powerup.check_collision(paddle) == True:
+            powerups.remove(powerup)
+            new_ball = Ball(paddle.x + paddle.width // 2, paddle.y - 10, 10, 5 * random.choice([-1, 1]), -5) # Spawn new ball at center of paddle
+            balls.append(new_ball)
+    
+
+    # Remove power-ups that go off-screen
+    active_powerups = [] # Ones still on screen
+    
+    for powerup in powerups:
+        if powerup.rect.y < SCREEN_HEIGHT:  # Check if powerup is still on screen
+            active_powerups.append(powerup)  # Keep powerup
+
+    powerups = active_powerups # Override the list of active powerups
+
+
 
 
     # Drawing game objects:
-    ball.draw()
+    for ball in balls:
+        ball.draw()
+
     paddle.draw()
+
     for brick in active_bricks:
         brick.draw()
     
 
 
     # Game over condition
-    if ball.y >= SCREEN_HEIGHT:
-        font = pygame.font.SysFont(None, 74)
-        text = font.render("GAME OVER", True, WHITE)
-        screen.blit(text, (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 2))
-        pygame.display.flip()
-        pygame.time.wait(3000)
-        running = False
+    for ball in balls:
+        if ball.y >= SCREEN_HEIGHT:
+            font = pygame.font.SysFont(None, 74)
+            text = font.render("GAME OVER", True, WHITE)
+            screen.blit(text, (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 2))
+            pygame.display.flip()
+            pygame.time.wait(3000)
+            running = False
 
     # Win condition
     if not active_bricks:
