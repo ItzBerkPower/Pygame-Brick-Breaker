@@ -161,10 +161,24 @@ while running:
     for ball in balls:
         ball.move()
 
-    # Balls collision with paddle (Only the top)
+    # Balls collision with paddle (Direction control)
     for ball in balls:
         if (paddle.x < ball.x < paddle.x + paddle.width and paddle.y < ball.y + ball.radius < paddle.y + paddle.height):
-            ball.speed_y *= -1
+            #ball.speed_y *= -1
+
+            # Calculate where ball hits paddle (Only left, middle, right)
+            hit_position = (ball.x - paddle.x) / paddle.width # Between 0 and 1
+
+            # Adjust horizontal speed based on where it hits paddle (Vertical speed should stay the same)
+            if hit_position < 0.33: # Left side of paddle
+                ball.speed_x = -abs(ball.speed_x) # Left
+            
+            elif hit_position > 0.66: # Right side of paddle
+                ball.speed_x = abs(ball.speed_x) # Right
+
+            else: # Middle of paddle, so just randomise direction
+                ball.speed_x = random.choice([-1, 1]) * abs(ball.speed_x)
+
 
     
     # Ball collision with bricks (Any part of brick)
@@ -226,6 +240,7 @@ while running:
             pygame.display.flip()
             pygame.time.wait(3000)
             running = False
+
 
     # Win condition
     if not active_bricks:
