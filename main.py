@@ -164,8 +164,6 @@ while running:
     # Balls collision with paddle (Direction control)
     for ball in balls:
         if (paddle.x < ball.x < paddle.x + paddle.width and paddle.y < ball.y + ball.radius < paddle.y + paddle.height):
-            #ball.speed_y *= -1
-
             # Calculate where ball hits paddle (Only left, middle, right)
             hit_position = (ball.x - paddle.x) / paddle.width # Between 0 and 1
 
@@ -179,7 +177,7 @@ while running:
             else: # Middle of paddle, so just randomise direction
                 ball.speed_x = random.choice([-1, 1]) * abs(ball.speed_x)
 
-
+            ball.speed_y *= -1 # BOUNCE BALL UPWARD AFTERRRR
     
     # Ball collision with bricks (Any part of brick)
     for ball in balls:
