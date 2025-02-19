@@ -207,15 +207,7 @@ while running:
     
 
     # Remove power-ups that go off-screen
-    active_powerups = [] # Ones still on screen
-    
-    for powerup in powerups:
-        if powerup.rect.y < SCREEN_HEIGHT:  # Check if powerup is still on screen
-            active_powerups.append(powerup)  # Keep powerup
-
-    powerups = active_powerups # Override the list of active powerups
-
-
+    powerups = [powerup for powerup in powerups if powerup.rect.y < SCREEN_HEIGHT]
 
 
     # Drawing game objects:
@@ -230,14 +222,13 @@ while running:
 
 
     # Game over condition
-    for ball in balls:
-        if ball.y >= SCREEN_HEIGHT:
-            font = pygame.font.SysFont(None, 74)
-            text = font.render("GAME OVER", True, WHITE)
-            screen.blit(text, (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 2))
-            pygame.display.flip()
-            pygame.time.wait(3000)
-            running = False
+    if all(ball.y >= SCREEN_HEIGHT for ball in balls):
+        font = pygame.font.SysFont(None, 74)
+        text = font.render("GAME OVER", True, WHITE)
+        screen.blit(text, (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 2))
+        pygame.display.flip()
+        pygame.time.wait(3000)
+        running = False
 
 
     # Win condition
