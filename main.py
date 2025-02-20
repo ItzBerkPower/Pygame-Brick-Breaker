@@ -18,12 +18,28 @@ BLACK = (0, 0, 0)
 # Initialise clock
 clock = pygame.time.Clock()
 
+
+# Base 'GameObject' Class
+class GameObject:
+    # Initialise Game Object (Currently only coordinates)
+    def __init__(self, x, y):
+        self.x = x # Object x-coord
+        self.y = y # Object y-coord
+
+
+    def draw(self):
+        pass # Will be overridden by child classes
+
+    def move(self):
+        pass # Will be overridden by child classes
+
+
+
 # Ball Class
-class Ball:
+class Ball(GameObject):
     # Initialising Ball object
     def __init__(self, x, y, radius, speed_x, speed_y):
-        self.x = x # Ball x-coord
-        self.y = y # Ball y-coord
+        super().__init__(x, y) # Inherit coords from 'GameObject' class
         self.radius = radius # Ball radius
         self.speed_x = speed_x # Ball speed x-component
         self.speed_y = speed_y # Ball speed y-component
@@ -54,11 +70,10 @@ class Ball:
 
 
 # Paddle Class
-class Paddle:
+class Paddle(GameObject):
     # Initialising Paddle Object
     def __init__(self, x, y, width, height, speed):
-        self.x = x # Paddle x-coord
-        self.y = y # Paddle y-coord
+        super().__init__(x, y) # Inherit coords from 'GameObject' class
         self.width = width # Paddle width
         self.height = height # Paddle height
         self.speed = speed # Paddle speed
@@ -81,8 +96,9 @@ class Paddle:
 
 
 # Power-Up Class
-class PowerUp:
+class PowerUp(GameObject):
     def __init__(self, x, y):
+        super().__init__(x, y) # Inherit coords from 'GameObject' class
         self.rect = pygame.Rect(x, y, 20, 20)  # Power-up rect object (Small red square)
         self.active = True # Is on the map or not
 
@@ -104,9 +120,10 @@ class PowerUp:
 
 
 # Brick Class
-class Brick:
+class Brick(GameObject):
     # Initialising the Brick Object
     def __init__(self, x, y, width, height):
+        super().__init__(x, y) # Inherit coords from 'GameObject' class
         self.rect = pygame.Rect(x, y, width, height)
 
     # Function for drawing brick on actual screen
