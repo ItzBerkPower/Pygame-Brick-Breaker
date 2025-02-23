@@ -8,6 +8,11 @@ SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Breakout Game")
 
+
+# CONSTANTS
+brick_width = SCREEN_WIDTH // 10
+brick_height = 30
+
 # Colors
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -134,6 +139,30 @@ class Brick(GameObject):
 
 
 
+# Generating the bricks for a specific level (Initialising brick objects)
+def generate_bricks(level):
+    bricks = []
+
+    # Level 1
+    if level == 1:
+        for row in range(5):
+            for col in range(SCREEN_WIDTH // brick_width):
+                brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height)
+                bricks.append(brick)
+    
+
+    elif level == 2:
+        for row in range(6):
+            for col in range(SCREEN_WIDTH // brick_width):
+                if row % 2 == 0 and col % 2 == 0:  # Skip every even brick for a staggered effect
+                    continue
+
+                brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height)
+                bricks.append(brick)
+    
+    return bricks
+
+
 
 
 
@@ -141,20 +170,12 @@ class Brick(GameObject):
 ball = Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)
 paddle = Paddle((SCREEN_WIDTH - 100) // 2, SCREEN_HEIGHT - 30, 100, 20, 8)
 
-# Initialising brick objects
-brick_width = SCREEN_WIDTH // 10
-brick_height = 30
-brick_rows = 5 # How many rows of bricks
-active_bricks = []
-for row in range(brick_rows):
-    for col in range(SCREEN_WIDTH // brick_width):
-        brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height)
-        active_bricks.append(brick)
-
 # Variables:
 score = 0
 powerups = [] # List of power-ups
 balls = [ball] # List of all balls
+current_level = 1
+active_bricks = generate_bricks(current_level)
 
 
 # Game loop
@@ -250,13 +271,29 @@ while running:
 
     # Win condition
     if not active_bricks:
-        font = pygame.font.SysFont(None, 74)
-        text = font.render("YOU WIN!", True, WHITE)
-        screen.blit(text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT // 2))
-        pygame.display.flip()
-        pygame.time.wait(3000)
-        running = False
+        if current_level == 1:
+            # Display "Level 1 Completed" message
+            font = pygame.font.SysFont(None, 74)
+            text = font.render("Level 1 Completed", True, WHITE)
+            screen.blit(text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2))
+            pygame.display.flip()
+            pygame.time.wait(3000) # Wait for 3 seconds (Delay)
 
+
+            # Move to Level 2
+            current_level = 2
+            active_bricks = generate_bricks(current_level)  # Generate Level 2 bricks
+            balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)]  # Reset balls
+            powerups = []  # Reset power-ups
+
+        elif current_level == 2:
+            # Display "YOU WIN!" message, as only two levels for now
+            font = pygame.font.SysFont(None, 74)
+            text = font.render("YOU WIN!", True, WHITE)
+            screen.blit(text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT // 2))
+            pygame.display.flip()
+            pygame.time.wait(3000)
+            running = False
 
     # Display the score
     font = pygame.font.SysFont(None, 36)
