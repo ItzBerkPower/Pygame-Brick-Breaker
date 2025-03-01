@@ -143,24 +143,16 @@ class Brick(GameObject):
 def generate_bricks(level):
     bricks = []
 
-    # Level 1
-    if level == 1:
-        for row in range(5):
-            for col in range(SCREEN_WIDTH // brick_width):
-                brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height)
-                bricks.append(brick)
-    
-
-    elif level == 2:
-        for row in range(6):
-            for col in range(SCREEN_WIDTH // brick_width):
-                if row % 2 == 0 and col % 2 == 0:  # Skip every even brick for a staggered effect
-                    continue
-
-                brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height)
-                bricks.append(brick)
-    
+    # Increase the number of rows based on the level
+    rows = 4 + level  # Level 1: 5 rows, Level 2: 6 rows, etc.
+    for row in range(rows):
+        for col in range(SCREEN_WIDTH // brick_width):
+            brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height)
+            bricks.append(brick)
     return bricks
+
+
+
 
 
 
@@ -189,7 +181,6 @@ while running:
             running = False
     
 
-        
 
     # Moving paddle
     key_pressed = pygame.key.get_pressed()
@@ -208,6 +199,7 @@ while running:
             # Adjust horizontal speed based on position of hit on paddle
             ball.speed_x = hit_position * 10 # Scaling angle (Might make constant for 10)
             ball.speed_y *= -1 # Bounce ball up after
+
     
     # Ball collision with bricks (Any part of brick)
     for ball in balls:
@@ -261,31 +253,32 @@ while running:
         running = False
 
 
-    # Win condition
+    # Level completed condition
     if not active_bricks:
-        if current_level == 1:
-            # Display "Level 1 Completed" message
+        if current_level < 5:
             font = pygame.font.SysFont(None, 74)
-            text = font.render("Level 1 Completed", True, WHITE)
+            text = font.render(f"Level {current_level} Completed", True, WHITE) # Level completed message, generalised based on level
             screen.blit(text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2))
             pygame.display.flip()
             pygame.time.wait(3000) # Wait for 3 seconds (Delay)
 
 
-            # Move to Level 2
-            current_level = 2
-            active_bricks = generate_bricks(current_level)  # Generate Level 2 bricks
+            # Moving to next level
+            current_level += 1
+            active_bricks = generate_bricks(current_level)  # Generate next level bricks
             balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)]  # Reset balls
             powerups = []  # Reset power-ups
 
-        elif current_level == 2:
+        # If level 5, just display a "To be continued..." message, as will most likely be a boss fight
+        else:
             # Display "YOU WIN!" message, as only two levels for now
             font = pygame.font.SysFont(None, 74)
-            text = font.render("YOU WIN!", True, WHITE)
+            text = font.render("To be continued...", True, WHITE)
             screen.blit(text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT // 2))
             pygame.display.flip()
             pygame.time.wait(3000)
             running = False
+
 
     # Display the score
     font = pygame.font.SysFont(None, 36)
