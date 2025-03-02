@@ -273,66 +273,73 @@ def display_message(message):
 
 
 
+# Main game function
+def main():
 
-# Initialising ball and paddle objects
-ball = Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)
-paddle = Paddle((SCREEN_WIDTH - 100) // 2, SCREEN_HEIGHT - 30, 100, 20, 8)
+    # Initialising ball and paddle objects
+    ball = Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)
+    paddle = Paddle((SCREEN_WIDTH - 100) // 2, SCREEN_HEIGHT - 30, 100, 20, 8)
 
-# Variables:
-score = 0
-powerups = [] # List of power-ups
-balls = [ball] # List of all balls
-current_level = 1
-active_bricks = generate_bricks(current_level)
-
-
-# Game loop
-running = True
-
-while running:
-    running = event_handling()
+    # Variables:
+    score = 0
+    powerups = [] # List of power-ups
+    balls = [ball] # List of all balls
+    current_level = 1
+    active_bricks = generate_bricks(current_level)
 
 
-    # Moving all objects
-    key_pressed = pygame.key.get_pressed()
-    powerups = update_game_objects(paddle, balls, powerups, key_pressed)
+    # Game loop
+    running = True
+
+    while running:
+        running = event_handling()
 
 
-    # Check collisions
-    score = check_collisions(paddle, balls, active_bricks, powerups, score)
-
-    # Draw game objects
-    draw_game_objects(balls, paddle, active_bricks, powerups, score)
+        # Moving all objects
+        key_pressed = pygame.key.get_pressed()
+        powerups = update_game_objects(paddle, balls, powerups, key_pressed)
 
 
-    # Game over condition
-    if all(ball.rect.bottom >= SCREEN_HEIGHT for ball in balls):
-        display_message("GAME OVER")
-        running = False
+        # Check collisions
+        score = check_collisions(paddle, balls, active_bricks, powerups, score)
+
+        # Draw game objects
+        draw_game_objects(balls, paddle, active_bricks, powerups, score)
 
 
-    # Level completed condition
-    if not active_bricks:
-        if current_level < 5:
-            display_message(f"Level {current_level} Completed")
-
-            # Moving to next level
-            current_level += 1
-            active_bricks = generate_bricks(current_level)  # Generate next level bricks
-            balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)]  # Reset balls
-            powerups = []  # Reset power-ups
-
-
-        # If level 5, just display a "To be continued..." message, as will most likely be a boss fight
-        else:
-            display_message("To be continued...")
+        # Game over condition
+        if all(ball.rect.bottom >= SCREEN_HEIGHT for ball in balls):
+            display_message("GAME OVER")
             running = False
 
 
-    # Update display
-    pygame.display.flip()
-    clock.tick(60)
+        # Level completed condition
+        if not active_bricks:
+            if current_level < 5:
+                display_message(f"Level {current_level} Completed")
+
+                # Moving to next level
+                current_level += 1
+                active_bricks = generate_bricks(current_level)  # Generate next level bricks
+                balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)]  # Reset balls
+                powerups = []  # Reset power-ups
 
 
-# Quit Pygame
-pygame.quit()
+            # If level 5, just display a "To be continued..." message, as will most likely be a boss fight
+            else:
+                display_message("To be continued...")
+                running = False
+
+
+        # Update display
+        pygame.display.flip()
+        clock.tick(60)
+
+
+    # Quit Pygame
+    pygame.quit()
+
+
+# Running the game
+if __name__ == "__main__":
+    main()
