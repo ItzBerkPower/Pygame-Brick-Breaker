@@ -64,24 +64,24 @@ class Ball(CollidableObject):
 
     # Movement of ball
     def move(self):
-        self.x += self.speed_x
-        self.y += self.speed_y
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
 
         # Collision with walls => Collide with walls, then go opposite direction
-        if self.x <= self.radius or self.x >= SCREEN_WIDTH - self.radius:
+        if self.rect.left <= 0 or self.rect.right >= SCREEN_WIDTH:
             self.speed_x *= -1
-        if self.y <= self.radius:
+
+        if self.rect.top <= 0:
             self.speed_y *= -1
     
 
     # Function with drawing ball on actual screen
     def draw(self):
-        pygame.draw.circle(screen, RED, (int(self.x), int(self.y)), self.radius)
+        pygame.draw.circle(screen, RED, self.rect.center, self.radius)
 
     # Resetting the ball
     def reset(self):
-        self.x = SCREEN_WIDTH // 2
-        self.y = SCREEN_HEIGHT // 2
+        self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         self.speed_x = 5 * random.choice([-1, 1])
         self.speed_y = -5
 
@@ -101,12 +101,13 @@ class Paddle(CollidableObject):
     # Movement of the Paddle
     def move(self, keys):
         # If left key pressed, and already not at border of screen
-        if keys[pygame.K_LEFT] and self.x > 0:
-            self.x -= self.speed # Increase the speed left
+        if keys[pygame.K_LEFT] and self.rect.left > 0:
+            self.rect.x -= self.speed # Increase the speed left
         
         # If right key pressed, and already not at border of screen
-        if keys[pygame.K_RIGHT] and self.x < SCREEN_WIDTH - self.width:
-            self.x += self.speed # Increase the speed right
+        if keys[pygame.K_RIGHT] and self.rect.right < SCREEN_WIDTH:
+            self.rect.x += self.speed # Increase the speed right
+
 
     # Function for drawing paddle on actual screen
     def draw(self):
@@ -118,8 +119,7 @@ class Paddle(CollidableObject):
 # Power-Up Class
 class PowerUp(CollidableObject):
     def __init__(self, x, y):
-        super().__init__(x, y) # Inherit coords from 'GameObject' class
-        self.rect = pygame.Rect(x, y, 20, 20)  # Power-up rect object (Small red square)
+        super().__init__(x, y, 20, 20) # Inherit coords from 'GameObject' class
         self.active = True # Is on the map or not
 
     def move(self):
@@ -237,7 +237,6 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
 def draw_game_objects(balls, paddle, active_bricks, powerups, score):
     screen.fill(BLACK) # Fill screen black
 
-
     # Draw all balls on screen
     for ball in balls:
         ball.draw()
@@ -291,8 +290,7 @@ active_bricks = generate_bricks(current_level)
 running = True
 
 while running:
-
-    handle_events = event_handling()
+    running = event_handling()
 
 
     # Moving all objects
@@ -303,8 +301,8 @@ while running:
     # Check collisions
     score = check_collisions(paddle, balls, active_bricks, powerups, score)
 
-
-
+    # Draw game objects
+    draw_game_objects(balls, paddle, active_bricks, powerups, score)
 
 
     # Game over condition
