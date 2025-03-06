@@ -27,24 +27,14 @@ clock = pygame.time.Clock()
 # Base 'GameObject' Class
 class GameObject:
     # Initialise Game Object (Currently only coordinates)
-    def __init__(self, x, y):
-        self.x = x # Object x-coord
-        self.y = y # Object y-coord
-
+    def __init__(self, x, y, width, height):
+        self.rect = pygame.Rect(x, y, width, height) # Add rect for collision detection
 
     def draw(self):
         pass # Will be overridden by child classes
 
     def move(self):
         pass # Will be overridden by child classes
-
-
-
-# CollidableObject Class (Inherits From GameObject)
-class CollidableObject(GameObject):
-    def __init__(self, x, y, width, height):
-        super().__init__(x, y)
-        self.rect = pygame.Rect(x, y, width, height)  # Add a rect for collision detection
 
     def check_collision(self, other_object):
         return self.rect.colliderect(other_object.rect)
@@ -53,8 +43,9 @@ class CollidableObject(GameObject):
 
 
 
+
 # Ball Class
-class Ball(CollidableObject):
+class Ball(GameObject):
     # Initialising Ball object
     def __init__(self, x, y, radius, speed_x, speed_y):
         super().__init__(x - radius, y - radius, radius * 2, radius * 2) # Inherit coords from 'GameObject' class
@@ -89,12 +80,10 @@ class Ball(CollidableObject):
 
 
 # Paddle Class
-class Paddle(CollidableObject):
+class Paddle(GameObject):
     # Initialising Paddle Object
     def __init__(self, x, y, width, height, speed):
         super().__init__(x, y, width, height) # Inherit coords from 'GameObject' class
-        self.width = width # Paddle width
-        self.height = height # Paddle height
         self.speed = speed # Paddle speed
 
 
@@ -117,7 +106,7 @@ class Paddle(CollidableObject):
 
 
 # Power-Up Class
-class PowerUp(CollidableObject):
+class PowerUp(GameObject):
     def __init__(self, x, y):
         super().__init__(x, y, 20, 20) # Inherit coords from 'GameObject' class
         self.active = True # Is on the map or not
@@ -140,7 +129,7 @@ class PowerUp(CollidableObject):
 
 
 # Brick Class
-class Brick(CollidableObject):
+class Brick(GameObject):
     # Initialising the Brick Object
     def __init__(self, x, y, width, height):
         super().__init__(x, y, width, height) 
