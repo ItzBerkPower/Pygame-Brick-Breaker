@@ -200,7 +200,7 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
             ball.speed_x = hit_position * 10 # Adjust horizontal speed (Scale by 10)
             ball.speed_y *= -1 # Ball goes back up when hits paddle
 
-        
+         
     # Ball collision with bricks
     for ball in balls:
         for brick in active_bricks[:]:
@@ -213,6 +213,7 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
                     powerups.append(PowerUp(brick.rect.centerx, brick.rect.centery))
                 
 
+    # Powerup collision with paddle
     for powerup in powerups[:]:
         if powerup.check_collision(paddle):
             powerups.remove(powerup)
