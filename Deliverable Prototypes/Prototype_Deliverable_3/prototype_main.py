@@ -39,14 +39,8 @@ def main():
 
         # Level completed condition
         if not active_bricks:
-            if current_level < 5:
-                display_message(screen, f"Level {current_level} Completed")
-                current_level += 1
-                active_bricks = generate_bricks(current_level)
-                balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)]
-            else:
-                display_message(screen, "To be continued...")
-                running = False
+            display_message(screen, f"Level {current_level} Completed")
+            running = False
 
         pygame.display.flip()
         clock.tick(60)
