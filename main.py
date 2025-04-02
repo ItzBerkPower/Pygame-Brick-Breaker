@@ -24,8 +24,45 @@ LIGHT_GRAY = (150,150,150)
 ORANGE = (255, 100, 0)
 LIGHT_ORANGE = (250,50,0)
 
+levels = {
+    1: [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    2: [
+        [1, 1, 1, 1, 2, 1, 1, 1, 1, 2],
+        [1, 1, 2, 1, 1, 1, 2, 1, 1, 1],
+        [1, 1, 1, 1, 2, 1, 1, 1, 1, 2],
+        [1, 2, 1, 1, 1, 2, 1, 1, 1, 1]
+    ],
+    3: [
+        [2, 1, 2, 1, 2, 1, 2, 1, 2, 1],
+        [1, 2, 1, 2, 1, 2, 1, 2, 1, 2],
+        [2, 1, 2, 1, 2, 1, 2, 1, 2, 1],
+        [1, 2, 1, 2, 1, 2, 1, 2, 1, 2],
+        [2, 1, 2, 1, 2, 1, 2, 1, 2, 1]
+    ],
+    4: [
+        [1, 3, 1, 1, 2, 1, 1, 3, 1, 1],
+        [1, 1, 2, 1, 3, 1, 2, 1, 1, 1],
+        [3, 1, 1, 2, 1, 1, 1, 3, 1, 2],
+        [1, 2, 1, 1, 3, 1, 2, 1, 1, 1],
+        [1, 1, 3, 1, 1, 2, 1, 1, 3, 1]
+    ],
+    5: [
+        [2, 3, 2, 3, 2, 3, 2, 3, 2, 3],
+        [3, 2, 3, 2, 3, 2, 3, 2, 3, 2],
+        [2, 3, 2, 3, 2, 3, 2, 3, 2, 3],
+        [3, 2, 3, 2, 3, 2, 3, 2, 3, 2],
+        [2, 3, 2, 3, 2, 3, 2, 3, 2, 3]
+    ]
+}
+
+
+
 # Initialise clock
-clock = pygame.time.Clock()
+clock = pygame.time.Clock()    
 
 
 # Base 'GameObject' Class
@@ -156,7 +193,72 @@ class Brick(GameObject):
             inner_rect = self.rect.inflate(-4, -4)
             pygame.draw.rect(screen, LIGHT_ORANGE, inner_rect)
 
+        elif self.brick_type == "boss":
+            # Boss brick handles its own drawing
+            pass
 
+
+
+
+class BossBrick(Brick):  # Now inherits from Brick instead of GameObject
+    def __init__(self, x, y, width, height):
+        super().__init__(x, y, width, height, "boss")  # Set brick_type to "boss"
+        self.health = 10
+        self.phase = 1
+        self.speed = 2
+        self.direction = 1
+        self.projectiles = []
+        self.last_shot = 0
+        self.phase_colors = {
+            1: (200, 50, 50),    # Red
+            2: (200, 100, 50),   # Orange
+            3: (200, 50, 100)    # Purple
+        }
+
+    def move(self):
+        self.rect.x += self.speed * self.direction
+        if self.rect.right >= SCREEN_WIDTH or self.rect.left <= 0:
+            self.direction *= -1
+            
+    def shoot_projectile(self):
+        if pygame.time.get_ticks() - self.last_shot > 2000:
+            self.last_shot = pygame.time.get_ticks()
+            self.projectiles.append(
+                Projectile(self.rect.centerx, self.rect.bottom, 0, 5, 5)
+            )
+
+    def take_hit(self):
+        self.health -= 1
+        if self.health == 7:
+            self.phase = 2
+            self.speed = 3
+        elif self.health == 3:
+            self.phase = 3
+            self.speed = 4
+
+    def draw(self):
+        # Override the draw method from Brick
+        pygame.draw.rect(screen, self.phase_colors[self.phase], self.rect)
+        # Health bar
+        health_width = (self.rect.width * self.health) // 10
+        pygame.draw.rect(screen, (0, 255, 0), (self.rect.x, self.rect.y - 10, health_width, 5))
+
+
+
+class Projectile(GameObject):
+    def __init__(self, x, y, radius, speed_x, speed_y):
+        super().__init__(x - radius, y - radius, radius * 2, radius * 2)
+        self.radius = radius
+        self.speed_x = speed_x
+        self.speed_y = speed_y
+        self.color = (255, 255, 0)  # Yellow projectiles
+
+    def move(self):
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
+
+    def draw(self):
+        pygame.draw.circle(screen, self.color, self.rect.center, self.radius)
 
 
 
@@ -164,54 +266,35 @@ class Brick(GameObject):
 
 # Generating the bricks for a specific level (Initialising brick objects)
 def generate_bricks(level):
-    bricks = []
-    rows = 3  # Base number of rows
+    if level == 5:  # Boss level
+        boss = BossBrick(SCREEN_WIDTH//2 - 100, 50, 200, 40)
+        return [boss]
     
-    if level == 1:
-        # Level 1: Simple 3 rows of normal bricks
-        for row in range(rows):
-            for col in range(SCREEN_WIDTH // brick_width):
-                brick = Brick(col * brick_width, row * brick_height, 
-                            brick_width, brick_height, "normal")
-                bricks.append(brick)
-                
-    elif level == 2:
-        # Level 2: Current layout with indestructible every 5th brick
-        rows = 4
-        for row in range(rows):
-            for col in range(SCREEN_WIDTH // brick_width):
-                brick_type = "indestructible" if (row + col) % 5 == 0 else "normal"
-                brick = Brick(col * brick_width, row * brick_height, 
-                            brick_width, brick_height, brick_type)
-                bricks.append(brick)
-                
-    elif level == 3:
-        # Level 3: Harder - indestructible mixed with normal
-        rows = 5
-        for row in range(rows):
-            for col in range(SCREEN_WIDTH // brick_width):
-                # Every 3rd brick is indestructible in a checkerboard pattern
-                brick_type = "indestructible" if (row + col) % 3 == 0 else "normal"
-                brick = Brick(col * brick_width, row * brick_height, 
-                            brick_width, brick_height, brick_type)
-                bricks.append(brick)
-                
-    elif level == 4:
-        # Level 4: Introduces bomb bricks
-        rows = 5
-        for row in range(rows):
-            for col in range(SCREEN_WIDTH // brick_width):
-                if (row + col) % 7 == 0:  # Bomb bricks every 7th position
-                    brick_type = "bomb"
-                elif (row + col) % 4 == 0:  # Indestructible every 4th position
-                    brick_type = "indestructible"
-                else:
+    else:
+        bricks = []
+        level_grid = levels.get(level, levels[1])
+        
+        for row in range(len(level_grid)):
+            for col in range(len(level_grid[row])):
+
+                brick_type_num = level_grid[row][col]
+
+                if brick_type_num == 1:
                     brick_type = "normal"
-                brick = Brick(col * brick_width, row * brick_height, 
-                            brick_width, brick_height, brick_type)
-                bricks.append(brick)
+
+                elif brick_type_num == 2:
+                    brick_type = "indestructible"
+
+                elif brick_type_num == 3:
+                    brick_type = "bomb"
+
+                else:
+                    continue
                 
-    return bricks
+                brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height, brick_type)
+                bricks.append(brick)
+        
+        return bricks
 
 
 
@@ -258,6 +341,18 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
     for ball in balls:
         for brick in active_bricks[:]:
             if ball.check_collision(brick): # Check collision (Simplified using CollideableObject class)
+                
+                if isinstance(brick, BossBrick):
+                    brick.take_hit()
+                    ball.speed_y *= -1
+                    score += 5  # Points per hit
+                    
+                    # Check if boss is defeated
+                    if brick.health <= 0:
+                        active_bricks.remove(brick)
+                        display_message("BOSS DEFEATED! VICTORY!")
+                        return score   
+                    
                 if brick.brick_type == "normal":
                     active_bricks.remove(brick)
                     score += 10 # Increase score
@@ -272,25 +367,45 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
                     ball.speed_y *= -1
             
 
-                # Bomb blocks, need to remove every block around it
-                elif brick.brick_type == "bomb":
+                if brick.brick_type == "bomb":
+                    # Get grid position of bomb
+                    bomb_col = brick.rect.x // brick_width
+                    bomb_row = brick.rect.y // brick_height
+                    
                     # Remove bomb brick
                     active_bricks.remove(brick)
-                    score += 20  # Extra points for bomb bricks
+                    score += 20
                     ball.speed_y *= -1
                     
-                    # Find and remove adjacent bricks
-                    bomb_x, bomb_y = brick.rect.x, brick.rect.y
-                    directions = [(0, -brick_height), (0, brick_height),  # up, down
-                                 (-brick_width, 0), (brick_width, 0)]     # left, right
+                    # Directions: up, down, left, right
+                    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
                     
-                    for dx, dy in directions:
-                        for other_brick in active_bricks[:]:
-                            if (other_brick.rect.x == bomb_x + dx and 
-                                other_brick.rect.y == bomb_y + dy and
-                                other_brick.brick_type != "indestructible"):  # Don't remove indestructible bricks
-                                active_bricks.remove(other_brick)
-                                score += 5  # Small bonus for adjacent bricks
+                    for dr, dc in directions:
+                        # Calculate adjacent brick's grid position
+                        adj_row, adj_col = bomb_row + dr, bomb_col + dc
+                        
+                        # Find and remove adjacent brick if it exists
+                        for adj_brick in active_bricks[:]:
+                            adj_brick_col = adj_brick.rect.x // brick_width
+                            adj_brick_row = adj_brick.rect.y // brick_height
+                            
+                            if (adj_brick_row == adj_row and 
+                                adj_brick_col == adj_col and
+                                adj_brick.brick_type != "indestructible"):
+                                active_bricks.remove(adj_brick)
+                                score += 5
+
+
+    # Handle projectile collisions with paddle
+    for brick in active_bricks:
+        if isinstance(brick, BossBrick):  # More reliable check than brick_type
+            for projectile in brick.projectiles[:]:
+                if projectile.check_collision(paddle):
+                    brick.projectiles.remove(projectile)
+                    # Handle player hit (reduce lives, etc.)
+                    display_message("HIT BY BOSS!")
+                    # For now, just end game - you might want to add lives system
+                    return score
 
 
     # Powerup collision with paddle
@@ -317,6 +432,10 @@ def draw_game_objects(balls, paddle, active_bricks, powerups, score):
     # Draw all active bricks on screen
     for brick in active_bricks:
         brick.draw()
+
+        if isinstance(brick, BossBrick):
+            for projectile in brick.projectiles:
+                projectile.draw()
 
 
     # Draw all powerups on screen
@@ -354,7 +473,7 @@ def main():
     score = 0
     powerups = [] # List of power-ups
     balls = [ball] # List of all balls
-    current_level = 3
+    current_level = 5
     active_bricks = generate_bricks(current_level)
 
 
@@ -368,6 +487,23 @@ def main():
         # Moving all objects
         key_pressed = pygame.key.get_pressed()
         powerups = update_game_objects(paddle, balls, powerups, key_pressed)
+
+        # Update boss and projectiles if in level 5
+        if current_level == 5:
+            for brick in active_bricks:
+                if brick.brick_type == "boss":
+                    brick.move()
+                    # Shoot projectiles based on phase
+                    if brick.phase >= 2:  # Only shoot in phases 2 and 3
+                        brick.shoot_projectile()
+                    
+                    # Update all projectiles
+                    for projectile in brick.projectiles[:]:
+                        projectile.move()
+                        
+                        # Remove projectiles that go off-screen
+                        if projectile.rect.top > SCREEN_HEIGHT:
+                            brick.projectiles.remove(projectile)
 
 
         # Check collisions
@@ -384,7 +520,7 @@ def main():
 
 
         # Level completed condition
-        if not any(brick.brick_type == "normal" for brick in active_bricks):
+        if not any((brick.brick_type == "normal" or brick.brick_type == "bomb") for brick in active_bricks):
             if current_level < 5:
                 display_message(f"Level {current_level} Completed")
 
@@ -397,8 +533,12 @@ def main():
 
             # If level 5, just display a "To be continued..." message, as will most likely be a boss fight
             else:
-                display_message("To be continued...")
-                running = False
+                # Special handling for level 5 (boss level)
+                if not any(brick.brick_type == "boss" for brick in active_bricks):
+                    display_message("BOSS DEFEATED! YOU WIN!")
+                    running = False
+                    # Alternatively, you could add a victory screen here
+                    # or transition to a new game+ mode with harder bosses
 
 
         # Update display
