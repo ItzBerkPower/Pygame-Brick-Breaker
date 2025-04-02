@@ -19,6 +19,7 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
+GRAY = (100, 100, 100)
 
 # Initialise clock
 clock = pygame.time.Clock()
@@ -131,14 +132,21 @@ class PowerUp(GameObject):
 # Brick Class
 class Brick(GameObject):
     # Initialising the Brick Object
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, brick_type = "normal"):
         super().__init__(x, y, width, height) 
+        self.brick_type = brick_type # Type of brick
 
     # Function for drawing brick on actual screen
     def draw(self):
-        pygame.draw.rect(screen, GREEN, self.rect) # Rectangle border
-        inner_rect = self.rect.inflate(-4, -4)  # Shrink the rectangle to put an actual border
-        pygame.draw.rect(screen, BLUE, inner_rect) # Draw the inner rectangle (Just fill with blue)
+        if self.brick_type == "normal":
+            pygame.draw.rect(screen, GREEN, self.rect) # Rectangle border
+            inner_rect = self.rect.inflate(-4, -4)  # Shrink the rectangle to put an actual border
+            pygame.draw.rect(screen, BLUE, inner_rect) # Draw the inner rectangle (Just fill with blue)
+
+        elif self.brick_type == "indestructible":
+            pygame.draw.rect(screen, GRAY, self.rect)
+            inner_rect = self.rect.inflate(-4, -4)
+            pygame.draw.rect(screen, (150, 150, 150), inner_rect)
 
 
 
@@ -150,12 +158,12 @@ class Brick(GameObject):
 # Generating the bricks for a specific level (Initialising brick objects)
 def generate_bricks(level):
     bricks = []
-
-    # Increase the number of rows based on the level
     rows = 4 + level  # Level 1: 5 rows, Level 2: 6 rows, etc.
+
     for row in range(rows):
         for col in range(SCREEN_WIDTH // brick_width):
-            brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height)
+            brick_type = "indestructible" if (row + col) % 5 == 0 else "normal"
+            brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height, brick_type)
             bricks.append(brick)
     return bricks
 
@@ -205,12 +213,16 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
     for ball in balls:
         for brick in active_bricks[:]:
             if ball.check_collision(brick): # Check collision (Simplified using CollideableObject class)
-                active_bricks.remove(brick)
-                ball.speed_y *= -1
-                score += 10 # Increase score
+                if brick.brick_type == "normal":
+                    active_bricks.remove(brick)
+                    ball.speed_y *= -1
+                    score += 10 # Increase score
 
-                if random.randint(1,8) == 1:
-                    powerups.append(PowerUp(brick.rect.centerx, brick.rect.centery))
+                    if random.randint(1,8) == 1:
+                        powerups.append(PowerUp(brick.rect.centerx, brick.rect.centery))
+                
+                elif brick.brick_type == "indestructible":
+                    ball.speed_y *= -1
                 
 
     # Powerup collision with paddle
@@ -304,7 +316,7 @@ def main():
 
 
         # Level completed condition
-        if not active_bricks:
+        if not any(brick.brick_type == "normal" for brick in active_bricks):
             if current_level < 5:
                 display_message(f"Level {current_level} Completed")
 
