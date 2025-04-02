@@ -20,6 +20,9 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
+LIGHT_GRAY = (150,150,150)
+ORANGE = (255, 100, 0)
+LIGHT_ORANGE = (250,50,0)
 
 # Initialise clock
 clock = pygame.time.Clock()
@@ -146,8 +149,12 @@ class Brick(GameObject):
         elif self.brick_type == "indestructible":
             pygame.draw.rect(screen, GRAY, self.rect)
             inner_rect = self.rect.inflate(-4, -4)
-            pygame.draw.rect(screen, (150, 150, 150), inner_rect)
+            pygame.draw.rect(screen, LIGHT_GRAY, inner_rect)
 
+        elif self.brick_type == "bomb":
+            pygame.draw.rect(screen, ORANGE, self.rect)  # Orange color
+            inner_rect = self.rect.inflate(-4, -4)
+            pygame.draw.rect(screen, LIGHT_ORANGE, inner_rect)
 
 
 
@@ -158,15 +165,53 @@ class Brick(GameObject):
 # Generating the bricks for a specific level (Initialising brick objects)
 def generate_bricks(level):
     bricks = []
-    rows = 4 + level  # Level 1: 5 rows, Level 2: 6 rows, etc.
-
-    for row in range(rows):
-        for col in range(SCREEN_WIDTH // brick_width):
-            brick_type = "indestructible" if (row + col) % 5 == 0 else "normal"
-            brick = Brick(col * brick_width, row * brick_height, brick_width, brick_height, brick_type)
-            bricks.append(brick)
+    rows = 3  # Base number of rows
+    
+    if level == 1:
+        # Level 1: Simple 3 rows of normal bricks
+        for row in range(rows):
+            for col in range(SCREEN_WIDTH // brick_width):
+                brick = Brick(col * brick_width, row * brick_height, 
+                            brick_width, brick_height, "normal")
+                bricks.append(brick)
+                
+    elif level == 2:
+        # Level 2: Current layout with indestructible every 5th brick
+        rows = 4
+        for row in range(rows):
+            for col in range(SCREEN_WIDTH // brick_width):
+                brick_type = "indestructible" if (row + col) % 5 == 0 else "normal"
+                brick = Brick(col * brick_width, row * brick_height, 
+                            brick_width, brick_height, brick_type)
+                bricks.append(brick)
+                
+    elif level == 3:
+        # Level 3: Harder - indestructible mixed with normal
+        rows = 5
+        for row in range(rows):
+            for col in range(SCREEN_WIDTH // brick_width):
+                # Every 3rd brick is indestructible in a checkerboard pattern
+                brick_type = "indestructible" if (row + col) % 3 == 0 else "normal"
+                brick = Brick(col * brick_width, row * brick_height, 
+                            brick_width, brick_height, brick_type)
+                bricks.append(brick)
+                
+    elif level == 4:
+        # Level 4: Introduces bomb bricks
+        rows = 5
+        for row in range(rows):
+            for col in range(SCREEN_WIDTH // brick_width):
+                if (row + col) % 7 == 0:  # Bomb bricks every 7th position
+                    brick_type = "bomb"
+                elif (row + col) % 4 == 0:  # Indestructible every 4th position
+                    brick_type = "indestructible"
+                else:
+                    brick_type = "normal"
+                brick = Brick(col * brick_width, row * brick_height, 
+                            brick_width, brick_height, brick_type)
+                bricks.append(brick)
+                
     return bricks
-
 
 
 
@@ -215,15 +260,38 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
             if ball.check_collision(brick): # Check collision (Simplified using CollideableObject class)
                 if brick.brick_type == "normal":
                     active_bricks.remove(brick)
-                    ball.speed_y *= -1
                     score += 10 # Increase score
 
                     if random.randint(1,8) == 1:
                         powerups.append(PowerUp(brick.rect.centerx, brick.rect.centery))
-                
-                elif brick.brick_type == "indestructible":
+        
                     ball.speed_y *= -1
                 
+                # Indestructible blocks, just bounce back
+                elif brick.brick_type == "indestructible":
+                    ball.speed_y *= -1
+            
+
+                # Bomb blocks, need to remove every block around it
+                elif brick.brick_type == "bomb":
+                    # Remove bomb brick
+                    active_bricks.remove(brick)
+                    score += 20  # Extra points for bomb bricks
+                    ball.speed_y *= -1
+                    
+                    # Find and remove adjacent bricks
+                    bomb_x, bomb_y = brick.rect.x, brick.rect.y
+                    directions = [(0, -brick_height), (0, brick_height),  # up, down
+                                 (-brick_width, 0), (brick_width, 0)]     # left, right
+                    
+                    for dx, dy in directions:
+                        for other_brick in active_bricks[:]:
+                            if (other_brick.rect.x == bomb_x + dx and 
+                                other_brick.rect.y == bomb_y + dy and
+                                other_brick.brick_type != "indestructible"):  # Don't remove indestructible bricks
+                                active_bricks.remove(other_brick)
+                                score += 5  # Small bonus for adjacent bricks
+
 
     # Powerup collision with paddle
     for powerup in powerups[:]:
@@ -286,7 +354,7 @@ def main():
     score = 0
     powerups = [] # List of power-ups
     balls = [ball] # List of all balls
-    current_level = 1
+    current_level = 3
     active_bricks = generate_bricks(current_level)
 
 
