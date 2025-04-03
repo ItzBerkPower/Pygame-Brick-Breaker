@@ -62,11 +62,17 @@ class Ball(GameObject):
         self.rect.x += self.speed_x
         self.rect.y += self.speed_y
 
-        # Collision with walls => Collide with walls, then go opposite direction
-        if self.rect.left <= 0 or self.rect.right >= SCREEN_WIDTH:
+        # Wall collisions with position correction
+        if self.rect.left <= 0:
+            self.rect.left = 0
+            self.speed_x *= -1
+
+        elif self.rect.right >= SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
             self.speed_x *= -1
 
         if self.rect.top <= 0:
+            self.rect.top = 0
             self.speed_y *= -1
     
 
@@ -356,12 +362,14 @@ def main():
     balls = [ball] # List of all balls
     current_level = 4
     active_bricks = generate_bricks(current_level)
+    lives = 3
 
 
     # Game loop
     running = True
 
     while running:
+        
         running = event_handling()
 
 
@@ -369,6 +377,11 @@ def main():
         key_pressed = pygame.key.get_pressed()
         powerups = update_game_objects(paddle, balls, powerups, key_pressed)
 
+        for ball in balls[:]:
+            print(ball.speed_y)
+            ball.move()
+            if ball.rect.top >= SCREEN_HEIGHT:
+                balls.remove(ball)
 
         # Check collisions
         score = check_collisions(paddle, balls, active_bricks, powerups, score)
@@ -378,9 +391,13 @@ def main():
 
 
         # Game over condition
-        if all(ball.rect.bottom >= SCREEN_HEIGHT for ball in balls):
-            display_message("GAME OVER")
-            running = False
+        if not balls:
+            lives -= 1
+            if lives > 0:
+                balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)]  # Reset balls
+            else:
+                display_message("GAME OVER")
+                running = False
 
 
         # Level completed condition
