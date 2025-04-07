@@ -13,6 +13,14 @@ pygame.display.set_caption("Breakout Game")
 BRICK_WIDTH = SCREEN_WIDTH // 10
 BRICK_HEIGHT = 30
 
+PADDLE_WIDTH, PADDLE_HEIGHT = 100, 20
+PADDLE_SPEED = 8
+
+POWERUP_SIZE = 20
+
+BALL_RADIUS = 10
+BALL_SPEED = 5
+
 # Colors
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -53,11 +61,17 @@ class GameObject:
 # Ball Class
 class Ball(GameObject):
     # Initialising Ball object
-    def __init__(self, x, y, radius, speed_x, speed_y):
-        super().__init__(x - radius, y - radius, radius * 2, radius * 2) # Inherit coords from 'GameObject' class
-        self.radius = radius # Ball radius
-        self.speed_x = speed_x # Ball speed x-component
-        self.speed_y = speed_y # Ball speed y-component
+    def __init__(self, x, y):
+        super().__init__(x - BALL_RADIUS, y - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2) # Inherit coords from 'GameObject' class
+        self.reset() # Run the reset module (Simplifies the code)
+
+
+    # Resetting the ball (Also for beginning)
+    def reset(self):
+        self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+        self.speed_x = BALL_SPEED * random.choice([-1, 1])
+        self.speed_y = -BALL_SPEED
+
 
     # Movement of ball
     def move(self):
@@ -80,13 +94,7 @@ class Ball(GameObject):
 
     # Function with drawing ball on actual screen
     def draw(self):
-        pygame.draw.circle(screen, RED, self.rect.center, self.radius)
-
-    # Resetting the ball
-    def reset(self):
-        self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-        self.speed_x = 5 * random.choice([-1, 1])
-        self.speed_y = -5
+        pygame.draw.circle(screen, RED, self.rect.center, BALL_RADIUS)
 
 
 
@@ -94,9 +102,13 @@ class Ball(GameObject):
 # Paddle Class
 class Paddle(GameObject):
     # Initialising Paddle Object
-    def __init__(self, x, y, width, height, speed):
-        super().__init__(x, y, width, height) # Inherit coords from 'GameObject' class
-        self.speed = speed # Paddle speed
+    def __init__(self):
+        width, height = PADDLE_WIDTH, PADDLE_HEIGHT
+        x = (SCREEN_WIDTH - width) // 2
+        y = SCREEN_HEIGHT - height - 30
+        super().__init__(x, y, width, height) # Sends coords to 'GameObject' class to make rect
+        self.speed = PADDLE_SPEED
+        
 
 
     # Movement of the Paddle
@@ -116,27 +128,21 @@ class Paddle(GameObject):
 
 
 
-
 # Power-Up Class
 class PowerUp(GameObject):
     def __init__(self, x, y):
-        super().__init__(x, y, 20, 20) # Inherit coords from 'GameObject' class
+        super().__init__(x, y, POWERUP_SIZE, POWERUP_SIZE) # Inherit coords from 'GameObject' class
         self.active = True # Is on the map or not
+        self.speed = 2
 
     def move(self):
-        self.rect.y += 2  # Move the power-up down the screen (Down the screen is positive TOOK SO LONG TO UNDERSTAND)
+        self.rect.y += self.speed  # Move the power-up down the screen (Down the screen is positive TOOK SO LONG TO UNDERSTAND)
 
     # Draw the power-up on the screen
     def draw(self):
         if self.active:
             pygame.draw.rect(screen, RED, self.rect)
 
-    # Check the collision of the power-up with the paddle
-    def check_collision(self, paddle):
-        if self.active and super().check_collision(paddle): # If collides with paddle
-            self.active = False # Delete the powerup
-            return True # (So new ball can be spawned)
-        return False
 
 
 
@@ -251,14 +257,19 @@ def event_handling():
 def update_game_objects(paddle, balls, powerups, keys):
     paddle.move(keys) # Move paddle
 
-    for ball in balls:
+    for ball in balls[:]:
         ball.move() # Move all the balls
+    
+        if ball.rect.top >= SCREEN_HEIGHT: # If ball goes under paddle, remove it
+            balls.remove(ball)
+        
 
-    for powerup in powerups:
+    for powerup in powerups[:]:
         powerup.move() # Move all powerups
 
-    # Remove power-ups that go off-screen
-    powerups = [powerup for powerup in powerups if powerup.rect.y < SCREEN_HEIGHT]
+        if powerup.rect.top >= SCREEN_HEIGHT: # If powerup goes under paddle, remove it
+            powerups.remove(powerup)
+
 
     return powerups
 
@@ -268,69 +279,89 @@ def update_game_objects(paddle, balls, powerups, keys):
 
 
 
+def handle_paddle_collision(ball, paddle):
+    '''
+    Handles collisions between paddle and ball (With the proper direction control)
+    All balls are looped through in actual game loop
+    WILL REMOVE LATER: Code changed so ball doesn't get stuck in wall or paddle
+    '''
+
+    if ball.rect.colliderect(paddle.rect): # Check collision (Simplified using CollideableObject class)
+        hit_pos = (ball.rect.centerx - paddle.rect.centerx) / (paddle.rect.width / 2) # Calculate where ball is relative to center using rect
+        ball.speed_x = hit_pos * 5 * 1.5 # Ball speed is 5, and with 1.5 multiplier
+        ball.speed_y = -abs(ball.speed_y) # Guarantees upward direction)
+        ball.rect.bottom = paddle.rect.top # Prevent ball getting stuck in paddle 
 
 
 
 
-# Function to check collisions between objects
-def check_collisions(paddle, balls, active_bricks, powerups, score):
-    
-    # Ball collision with paddle (With proper directional control)
-    for ball in balls:
-        if ball.check_collision(paddle): # Check collision (Simplified using CollideableObject class)
-            hit_position = (ball.rect.centerx - paddle.rect.centerx) / (paddle.rect.width / 2) # Calculate where ball is relative to center using rect
-            ball.speed_x = hit_position * 10 # Adjust horizontal speed (Scale by 10)
-            ball.speed_y *= -1 # Ball goes back up when hits paddle
+def handle_powerup_collision(powerups, paddle, balls):
+    '''
+    Handles collisions between powerup and paddle
+    '''
 
-         
-    # Ball collision with bricks
-    for ball in balls:
-        for brick in active_bricks[:]:
-            if ball.check_collision(brick): # Check collision (Simplified using CollideableObject class)
-                if brick.brick_type == "normal":
-                    active_bricks.remove(brick)
-                    score += 10 # Increase score
-
-                    if random.randint(1,8) == 1:
-                        powerups.append(PowerUp(brick.rect.centerx, brick.rect.centery))
-        
-                    ball.speed_y *= -1
-                
-                # Indestructible blocks, just bounce back
-                elif brick.brick_type == "indestructible":
-                    ball.speed_y *= -1
-            
-
-                # Bomb blocks, need to remove every block around it
-                elif brick.brick_type == "bomb":
-                    # Remove bomb brick
-                    active_bricks.remove(brick)
-                    score += 20  # Extra points for bomb bricks
-                    ball.speed_y *= -1
-                    
-                    # Find and remove adjacent bricks
-                    bomb_x, bomb_y = brick.rect.x, brick.rect.y
-                    directions = [(0, -BRICK_HEIGHT), (0, BRICK_HEIGHT),  # up, down
-                                 (-BRICK_WIDTH, 0), (BRICK_WIDTH, 0)]     # left, right
-                    
-                    for dx, dy in directions:
-                        for other_brick in active_bricks[:]:
-                            if (other_brick.rect.x == bomb_x + dx and 
-                                other_brick.rect.y == bomb_y + dy and
-                                other_brick.brick_type != "indestructible"):  # Don't remove indestructible bricks
-                                active_bricks.remove(other_brick)
-                                score += 5  # Small bonus for adjacent bricks
-
-
-    # Powerup collision with paddle
     for powerup in powerups[:]:
-        if powerup.check_collision(paddle):
+        if powerup.rect.colliderect(paddle.rect):
             powerups.remove(powerup)
-            new_ball = Ball(paddle.rect.centerx, paddle.rect.top - 10, 10, 5 * random.choice([-1, 1]), -5) # Spawn new ball at center of paddle (Using paddle rect)
+            new_ball = Ball(paddle.rect.centerx, paddle.rect.top - 10) # Spawn new ball at center of paddle (Using paddle rect)
             balls.append(new_ball)
 
-    return score # Updated score when hit a brick
-    
+
+def handle_brick_collision(ball, active_bricks, powerups):
+    '''
+    Handles collisions between the bricks and ball
+    '''
+
+    score = 0 # Finding the extra score added on
+
+    for brick in active_bricks[:]:
+        if ball.rect.colliderect(brick.rect):
+            # Changing direction of ball, but making sure ball doesn't get bricks on any side / Go through them
+            if abs(ball.rect.bottom - brick.rect.top) < 10 and ball.speed_y > 0:
+                ball.speed_y *= -1
+                ball.rect.bottom = brick.rect.top
+
+            elif abs(ball.rect.top - brick.rect.bottom) < 10 and ball.speed_y < 0:
+                ball.speed_y *= -1
+                ball.rect.top = brick.rect.bottom
+
+            elif abs(ball.rect.right - brick.rect.left) < 10 and ball.speed_x > 0:
+                ball.speed_x *= -1
+                ball.rect.right = brick.rect.left
+
+            elif abs(ball.rect.left - brick.rect.right) < 10 and ball.speed_x < 0:
+                ball.speed_x *= -1
+                ball.rect.left = brick.rect.right
+            
+
+            # Normal blocks have chance of spawning power-up, otherwise increase score ans bounce back normally
+            if brick.brick_type == "normal":
+                active_bricks.remove(brick) # Remove original brick
+                score += 10 # Increase score
+
+                if random.randint(1,8) == 1:
+                    powerups.append(PowerUp(brick.rect.centerx, brick.rect.centery))
+
+            
+            # Indestructible blocks only bounce back
+            elif brick.brick_type == "indestructible":
+                pass # As ball is bounced back either way above
+
+            
+            elif brick.brick_type == "bomb":
+                active_bricks.remove(brick) # Remove original brick
+                score += 20 # Increase score (Higher because bomb block)
+
+                # Find and remove the adjance bricks
+                for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # All positions (Up, down, left, right)
+                    for other_brick in active_bricks[:]: # Loop through all the bricks to find adjacent bricks
+                        if (other_brick.rect.x == brick.rect.x + (dx  *BRICK_WIDTH) and other_brick.rect.y == brick.rect.y + (dy * BRICK_HEIGHT) and other_brick.brick_type != "indestructible"): # If the other brick is one of the adjacent bricks
+                            active_bricks.remove(other_brick) # Remove the adjance bricks
+                            score += 5 # Only 5 points for other bricks
+            
+            break # Save memory
+
+    return score
 
 
 
@@ -376,13 +407,26 @@ def display_message(message, duration = 3000):
 
 
 
+def check_level_complete(active_bricks, current_level):
+    '''
+    Check if the level is complete
+    '''
+
+    if current_level < 5:
+        return not any(brick.brick_type in ("normal", "bomb") for brick in active_bricks)
+    
+    # STUD: If I do add a boss level
+    #else:
+    #    return not any(isinstance(brick, BossBrick) for brick in active_bricks)
+
+
 
 # Main game function
 def main():
 
     # Initialising ball and paddle objects
-    ball = Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)
-    paddle = Paddle((SCREEN_WIDTH - 100) // 2, SCREEN_HEIGHT - 30, 100, 20, 8)
+    ball = Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+    paddle = Paddle()
 
     # Variables:
     score = 0
@@ -405,48 +449,54 @@ def main():
         key_pressed = pygame.key.get_pressed()
         powerups = update_game_objects(paddle, balls, powerups, key_pressed)
 
-        for ball in balls[:]:
-            print(ball.speed_y)
-            ball.move()
-            if ball.rect.top >= SCREEN_HEIGHT:
-                balls.remove(ball)
+        
+        for ball in balls:
+            handle_paddle_collision(ball, paddle)
+            score += handle_brick_collision(ball, active_bricks, powerups)
+        
+        handle_powerup_collision(powerups, paddle, balls)
 
-        # Check collisions
-        score = check_collisions(paddle, balls, active_bricks, powerups, score)
 
-        # Draw game objects
-        draw_game_objects(balls, paddle, active_bricks, powerups, score, lives, current_level)
+
+
 
 
         # Game over condition
         if not balls:
             lives -= 1
             if lives > 0:
-                balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)]  # Reset balls
+                balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]  # Reset balls
+                         
             else:
                 display_message("GAME OVER")
                 running = False
 
 
         # Level completed condition
-        if not any(brick.brick_type == "normal" for brick in active_bricks):
-            if current_level < 5:
+        if check_level_complete(active_bricks, current_level):
+            # STUD: ACCOUNTING FOR BOSS LEVEL
+            if current_level < 4:
                 display_message(f"Level {current_level} Completed")
-
-                # Moving to next level
-                current_level += 1
+                
+                current_level += 1 # Increase level
                 active_bricks = generate_bricks(current_level)  # Generate next level bricks
-                balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 10, 5 * random.choice([-1, 1]), -5)]  # Reset balls
+                balls = [Ball(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]  # Reset balls
                 powerups = []  # Reset power-ups
 
 
             # If level 5, just display a "To be continued..." message, as will most likely be a boss fight
-            else:
+            elif current_level == 4:
                 display_message("To be continued...")
+                running = False
+
+            else:
+                display_message("YOU WIN!")
                 running = False
 
 
         # Update display
+        screen.fill(BLACK)
+        draw_game_objects(balls, paddle, active_bricks, powerups, score, lives, current_level) # Draw all game objects
         pygame.display.flip()
         clock.tick(60)
 
