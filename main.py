@@ -367,12 +367,12 @@ def draw_game_objects(balls, paddle, active_bricks, powerups, score, lives, leve
 
 
 # Displaying update messages on screen (At end of level, etc.)
-def display_message(message):
+def display_message(message, duration = 3000):
     font = pygame.font.SysFont(None, 74)
     text = font.render(message, True, WHITE) # Where actual message goes
     screen.blit(text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2))
     pygame.display.flip()
-    pygame.time.wait(3000) # 3 second delay to add tension :)
+    pygame.time.wait(duration) # 3 second delay to add tension :)
 
 
 
