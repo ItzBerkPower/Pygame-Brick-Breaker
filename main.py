@@ -264,6 +264,14 @@ def update_game_objects(paddle, balls, powerups, keys):
 
 
 
+
+
+
+
+
+
+
+
 # Function to check collisions between objects
 def check_collisions(paddle, balls, active_bricks, powerups, score):
     
@@ -327,7 +335,7 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
 
 
 # Drawing all game objects
-def draw_game_objects(balls, paddle, active_bricks, powerups, score):
+def draw_game_objects(balls, paddle, active_bricks, powerups, score, lives, level):
     screen.fill(BLACK) # Fill screen black
 
     # Draw all balls on screen
@@ -347,11 +355,14 @@ def draw_game_objects(balls, paddle, active_bricks, powerups, score):
         powerup.draw()
 
 
-    # Display score
     font = pygame.font.SysFont(None, 36)
     score_text = font.render(f"Score: {score}", True, WHITE)
-    screen.blit(score_text, (10, SCREEN_HEIGHT - 40))
+    lives_text = font.render(f"Lives: {lives}", True, WHITE)
+    level_text = font.render(f"Level: {level}", True, WHITE)
 
+    screen.blit(score_text, (10, 10))
+    screen.blit(lives_text, (10, 50))
+    screen.blit(level_text, (SCREEN_WIDTH - 150, 10))
 
 
 
@@ -404,7 +415,7 @@ def main():
         score = check_collisions(paddle, balls, active_bricks, powerups, score)
 
         # Draw game objects
-        draw_game_objects(balls, paddle, active_bricks, powerups, score)
+        draw_game_objects(balls, paddle, active_bricks, powerups, score, lives, current_level)
 
 
         # Game over condition
