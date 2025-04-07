@@ -28,9 +28,12 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
-LIGHT_GRAY = (150,150,150)
+LIGHT_GRAY = (150, 150, 150)
 ORANGE = (255, 100, 0)
-LIGHT_ORANGE = (250,50,0)
+LIGHT_ORANGE = (250, 50, 0)
+YELLOW = (255, 255, 0)
+PURPLE = (200, 50, 100)
+
 
 # Initialise clock
 clock = pygame.time.Clock()
@@ -169,6 +172,84 @@ class Brick(GameObject):
             pygame.draw.rect(screen, ORANGE, self.rect)  # Orange color
             inner_rect = self.rect.inflate(-4, -4)
             pygame.draw.rect(screen, LIGHT_ORANGE, inner_rect)
+
+
+
+
+
+# Projectile Class
+class Projectile(GameObject):
+    def __init__(self, x, y):
+        super().__init__(x - 5, y, 10, 10)
+        self.speed = 7
+    
+    def move(self):
+        self.rect.y += self.speed
+    
+    def draw(self):
+        pygame.draw.circle(screen, YELLOW, self.rect.center, 5)
+
+
+
+
+
+class BossBrick(Brick):
+    def __init__(self, x, y):
+        super().__init__(x, y, "boss") # Brick type = "boss"
+        self.width, self.height = 200, 40
+        self.rect = pygame.Rect(x, y, self.width, self.height)
+
+        # All properties of the boss
+        self.health = 10
+        self.phase = 1
+        self.speed = 2
+        self.direction = 1
+        self.projectiles = []
+        self.last_shot = 0
+        self.phase_colors = {
+            1: (200, 50, 50),    # Red
+            2: (200, 100, 50),   # Orange
+            3: PURPLE            # Purple
+        }
+
+
+    # Moves only left and right
+    def move(self):
+        self.rect.x += self.speed * self.direction
+        if self.rect.right >= SCREEN_WIDTH or self.rect.left <= 0:
+            self.direction *= -1
+    
+
+    # Shoots projectile, though only after stage 2
+    def shoot_projectile(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_shot > 2000:  # Shoot every 2 seconds
+            self.last_shot = now
+            self.projectiles.append(Projectile(self.rect.centerx, self.rect.bottom))
+    
+
+    # Hitting the boss with the ball
+    def take_hit(self):
+        self.health -= 1
+        if self.health == 7:
+            self.phase = 2
+            self.speed = 3
+        elif self.health == 3:
+            self.phase = 3
+            self.speed = 4
+    
+    
+    # Drawing the boss on screen
+    def draw(self):
+        pygame.draw.rect(screen, self.phase_colors[self.phase], self.rect)
+        health_width = (self.width * self.health) // 10
+        pygame.draw.rect(screen, (0, 255, 0), (self.rect.x, self.rect.y - 10, health_width, 5))
+
+
+
+
+
+
 
 
 
@@ -334,6 +415,14 @@ def handle_brick_collision(ball, active_bricks, powerups):
                 ball.rect.left = brick.rect.right
             
 
+            if isinstance(brick, BossBrick):
+                brick.take_hit()
+                score += 5 # Hitting boss once = 5 points
+                
+                if brick.health <= 0:
+                    active_bricks.remove(brick) # If boss dead, remove it
+
+
             # Normal blocks have chance of spawning power-up, otherwise increase score ans bounce back normally
             if brick.brick_type == "normal":
                 active_bricks.remove(brick) # Remove original brick
@@ -421,6 +510,36 @@ def check_level_complete(active_bricks, current_level):
 
 
 
+def handle_boss_behavior(boss, paddle):
+    '''
+    Handling the behaviour of the boss
+    '''
+
+    lives_lost = 0 # Amount of lives the user loses
+    
+    boss.move() # Move boss
+
+    # If boss is in phase 2 or higher, then start shooting projectile
+    if boss.phase >= 2:
+        boss.shoot_projectile()
+    
+
+    for projectile in boss.projectiles[:]:
+        projectile.move() # Move each individual projectile
+
+        # If projectile goes under screen, remove it
+        if projectile.rect.top >= SCREEN_HEIGHT:
+            boss.projectiles.remove(projectile)
+
+        # If projectile collides with paddle, take off a life
+        elif projectile.rect.colliderect(paddle.rect):
+            boss.projectiles.remove(projectile)
+            lives_lost += 1
+    
+    return lives_lost # Operation with actual live count done in main loop
+
+
+
 # Main game function
 def main():
 
@@ -432,7 +551,7 @@ def main():
     score = 0
     powerups = [] # List of power-ups
     balls = [ball] # List of all balls
-    current_level = 3
+    current_level = 4
     active_bricks = generate_bricks(current_level)
     lives = 3
 
@@ -441,9 +560,7 @@ def main():
     running = True
 
     while running:
-        
         running = event_handling()
-
 
         # Moving all objects
         key_pressed = pygame.key.get_pressed()
@@ -457,7 +574,14 @@ def main():
         handle_powerup_collision(powerups, paddle, balls)
 
 
+        # Game over condition with just the boss level
+        for brick in [brick for brick in active_bricks if isinstance(brick, BossBrick)]: # Loop through every boss brick
+            lives -= handle_boss_behavior(brick, paddle) # Operation for finding current lives
 
+            # Game over condition (Explained in other parts of code)
+            if lives <= 0:
+                display_message("GAME OVER")
+                running = False
 
 
 
@@ -486,8 +610,14 @@ def main():
 
             # If level 5, just display a "To be continued..." message, as will most likely be a boss fight
             elif current_level == 4:
-                display_message("To be continued...")
-                running = False
+                current_level = 5 # Go to level 5
+
+                display_message("BOSS LEVEL!") # Adding a dramatic effect :)
+
+                active_bricks = generate_bricks(current_level) # Generate the next level bricks
+                balls = [Ball(SCREEN_WIDTH//2, SCREEN_HEIGHT//2)] # Reset balls
+                powerups = [] # Reset power-ups
+
 
             else:
                 display_message("YOU WIN!")
