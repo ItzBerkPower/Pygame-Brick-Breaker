@@ -10,8 +10,8 @@ pygame.display.set_caption("Breakout Game")
 
 
 # CONSTANTS
-brick_width = SCREEN_WIDTH // 10
-brick_height = 30
+BRICK_WIDTH = SCREEN_WIDTH // 10
+BRICK_HEIGHT = 30
 
 # Colors
 WHITE = (255, 255, 255)
@@ -42,6 +42,8 @@ class GameObject:
 
     def check_collision(self, other_object):
         return self.rect.colliderect(other_object.rect)
+
+
 
 
 
@@ -141,8 +143,8 @@ class PowerUp(GameObject):
 # Brick Class
 class Brick(GameObject):
     # Initialising the Brick Object
-    def __init__(self, x, y, width, height, brick_type = "normal"):
-        super().__init__(x, y, width, height) 
+    def __init__(self, x, y, brick_type = "normal"):
+        super().__init__(x, y, BRICK_WIDTH, BRICK_HEIGHT) 
         self.brick_type = brick_type # Type of brick
 
     # Function for drawing brick on actual screen
@@ -170,53 +172,66 @@ class Brick(GameObject):
 
 # Generating the bricks for a specific level (Initialising brick objects)
 def generate_bricks(level):
-    bricks = []
-    rows = 3  # Base number of rows
+    # Level designs (0 = empty, 1 = normal, 2 = indestructible, 3 = bomb)
+    level_designs = {
+        1: [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ],
+        2: [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 2, 1, 2, 1, 2, 1, 2, 1, 2],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ],
+        3: [
+            [2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 3, 1, 3, 1, 3, 1, 3, 1, 3],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ],
+        4: [
+            [3, 1, 3, 1, 3, 1, 3, 1, 3, 1],
+            [1, 3, 1, 3, 1, 3, 1, 3, 1, 3],
+            [2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [3, 1, 3, 1, 3, 1, 3, 1, 3, 1]
+        ]
+    }
     
-    if level == 1:
-        # Level 1: Simple 3 rows of normal bricks
-        for row in range(rows):
-            for col in range(SCREEN_WIDTH // brick_width):
-                brick = Brick(col * brick_width, row * brick_height, 
-                            brick_width, brick_height, "normal")
-                bricks.append(brick)
-                
-    elif level == 2:
-        # Level 2: Current layout with indestructible every 5th brick
-        rows = 4
-        for row in range(rows):
-            for col in range(SCREEN_WIDTH // brick_width):
-                brick_type = "indestructible" if (row + col) % 5 == 0 else "normal"
-                brick = Brick(col * brick_width, row * brick_height, 
-                            brick_width, brick_height, brick_type)
-                bricks.append(brick)
-                
-    elif level == 3:
-        # Level 3: Harder - indestructible mixed with normal
-        rows = 5
-        for row in range(rows):
-            for col in range(SCREEN_WIDTH // brick_width):
-                # Every 3rd brick is indestructible in a checkerboard pattern
-                brick_type = "indestructible" if (row + col) % 3 == 0 else "normal"
-                brick = Brick(col * brick_width, row * brick_height, 
-                            brick_width, brick_height, brick_type)
-                bricks.append(brick)
-                
-    elif level == 4:
-        # Level 4: Introduces bomb bricks
-        rows = 5
-        for row in range(rows):
-            for col in range(SCREEN_WIDTH // brick_width):
-                if (row + col) % 7 == 0:  # Bomb bricks every 7th position
-                    brick_type = "bomb"
-                elif (row + col) % 4 == 0:  # Indestructible every 4th position
-                    brick_type = "indestructible"
-                else:
-                    brick_type = "normal"
-                brick = Brick(col * brick_width, row * brick_height, 
-                            brick_width, brick_height, brick_type)
-                bricks.append(brick)
-                
+    bricks = []
+    
+    # STUD: What the boss brick would look like
+    #if level == 5:  # Boss level
+    #    return [BossBrick(SCREEN_WIDTH//2 - 100, 50)]
+    
+    if level not in level_designs:
+        return bricks
+    
+    design = level_designs[level]
+    
+    for row_idx, row in enumerate(design):
+        for col_idx, brick_type_code in enumerate(row):
+            if brick_type_code == 0:
+                continue
+            
+            x = col_idx * BRICK_WIDTH
+            y = row_idx * BRICK_HEIGHT  # Start from top with no gap
+            
+            if brick_type_code == 1:
+                brick = Brick(x, y, "normal")
+            elif brick_type_code == 2:
+                brick = Brick(x, y, "indestructible")
+            elif brick_type_code == 3:
+                brick = Brick(x, y, "bomb")
+            
+            bricks.append(brick)
+    
     return bricks
 
 
@@ -287,8 +302,8 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
                     
                     # Find and remove adjacent bricks
                     bomb_x, bomb_y = brick.rect.x, brick.rect.y
-                    directions = [(0, -brick_height), (0, brick_height),  # up, down
-                                 (-brick_width, 0), (brick_width, 0)]     # left, right
+                    directions = [(0, -BRICK_HEIGHT), (0, BRICK_HEIGHT),  # up, down
+                                 (-BRICK_WIDTH, 0), (BRICK_WIDTH, 0)]     # left, right
                     
                     for dx, dy in directions:
                         for other_brick in active_bricks[:]:
@@ -308,6 +323,8 @@ def check_collisions(paddle, balls, active_bricks, powerups, score):
 
     return score # Updated score when hit a brick
     
+
+
 
 # Drawing all game objects
 def draw_game_objects(balls, paddle, active_bricks, powerups, score):
@@ -360,7 +377,7 @@ def main():
     score = 0
     powerups = [] # List of power-ups
     balls = [ball] # List of all balls
-    current_level = 4
+    current_level = 3
     active_bricks = generate_bricks(current_level)
     lives = 3
 
