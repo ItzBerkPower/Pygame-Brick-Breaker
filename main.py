@@ -35,6 +35,13 @@ YELLOW = (255, 255, 0)
 PURPLE = (200, 50, 100)
 
 
+# Game State Constants
+STATE_MENU = 0
+STATE_PLAYING = 1
+STATE_PAUSED = 2
+STATE_GAMEOVER = 3
+STATE_WIN = 4
+
 # Initialise clock
 clock = pygame.time.Clock()
 
@@ -291,14 +298,14 @@ def generate_bricks(level):
         ]
     }
     
-    bricks = []
+    active_bricks = []
     
-    # STUD: What the boss brick would look like
-    #if level == 5:  # Boss level
-    #    return [BossBrick(SCREEN_WIDTH//2 - 100, 50)]
+
+    if level == 5:  # Boss level
+        return [BossBrick(SCREEN_WIDTH//2 - 100, 50)]
     
     if level not in level_designs:
-        return bricks
+        return active_bricks
     
     design = level_designs[level]
     
@@ -317,9 +324,9 @@ def generate_bricks(level):
             elif brick_type_code == 3:
                 brick = Brick(x, y, "bomb")
             
-            bricks.append(brick)
+            active_bricks.append(brick)
     
-    return bricks
+    return active_bricks
 
 
 
@@ -469,6 +476,10 @@ def draw_game_objects(balls, paddle, active_bricks, powerups, score, lives, leve
     for brick in active_bricks:
         brick.draw()
 
+        if isinstance(brick, BossBrick):
+            for projectile in brick.projectiles:
+                projectile.draw()
+
 
     # Draw all powerups on screen
     for powerup in powerups:
@@ -551,7 +562,7 @@ def main():
     score = 0
     powerups = [] # List of power-ups
     balls = [ball] # List of all balls
-    current_level = 4
+    current_level = 5
     active_bricks = generate_bricks(current_level)
     lives = 3
 
