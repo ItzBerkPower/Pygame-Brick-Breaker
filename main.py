@@ -898,7 +898,11 @@ class BrickBlitz:
 
     # Drawing all game objects
     def draw_game_objects(self):
-        screen.fill(BLACK) # Fill screen black
+
+        # DRAWING THE GRADIENT BACKGROUND
+        for y in range(SCREEN_HEIGHT):
+            color = (max(0, 10 - y//60), max(0, 20 - y//40), max(30, 50 - y//30))
+            pygame.draw.line(screen, color, (0, y), (SCREEN_WIDTH, y))
 
 
         # Draw all active bricks on screen
