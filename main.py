@@ -98,6 +98,10 @@ class Button:
 
 
 
+# Font helper function
+def get_font(size):
+    return pygame.font.SysFont("Comic Sans MS", size)
+
 
 
 # Base 'GameObject' Class
