@@ -400,6 +400,8 @@ class GameStateManager:
         self.game = None
         self.level_transition_timer = 0
         self.level_transition_text = ""
+
+
         
         # All buttons on the menu
         self.menu_buttons = [
@@ -445,6 +447,12 @@ class GameStateManager:
                 self.level_transition_text = f"Level {self.game.current_level}"
                 self.level_transition_timer = pygame.time.get_ticks()
                 new_state = STATE_LEVEL_TRANSITION
+
+
+            # If in the state level transition, but with a game, then change the new text, as a new level has been reached
+            elif new_state == STATE_LEVEL_TRANSITION:
+                self.level_transition_text = f"Level {self.game.current_level}"
+                self.level_transition_timer = pygame.time.get_ticks()
             
             self.state = new_state # Update the state variable
 
@@ -672,7 +680,6 @@ class GameStateManager:
             self.game.draw_game_objects()
             self.draw_level_transition()
 
-
         pygame.display.flip() # Update the screen to display the new changes
     
 
@@ -877,8 +884,8 @@ class BrickBlitz:
         # Level designs (0 = empty, 1 = normal, 2 = indestructible, 3 = bomb)
         level_designs = {
             1: [
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -1042,7 +1049,7 @@ class BrickBlitz:
         self.all_game_objects.extend(self.active_bricks)
         
 
-        # Polymorphic drawing - handles all objects the same way
+        # Polymorphic drawing - Draws all objects
         for obj in self.all_game_objects:
             obj.draw()
 
@@ -1054,6 +1061,9 @@ class BrickBlitz:
             if isinstance(brick, BossBrick):
                 for projectile in brick.projectiles:
                     projectile.draw()
+
+
+
 
 
         # Draw all balls on screen
