@@ -109,6 +109,9 @@ class Button:
 
 # Font helper function
 def get_font(size):
+    '''
+    Font used for all text in game, defined here
+    '''
     return pygame.font.SysFont("Comic Sans MS", size)
 
 
