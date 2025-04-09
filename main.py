@@ -379,7 +379,7 @@ class BossBrick(Brick):
     
     # Drawing the boss on screen
     def draw(self):
-        '''
+        '''DR
         Drawing the boss object on the screen
         '''
         pygame.draw.rect(screen, self.phase_colours[self.phase], self.rect)
@@ -401,6 +401,8 @@ class GameStateManager:
         self.level_transition_timer = 0
         self.level_transition_text = ""
 
+        self.transition_alpha = 0
+        self.fade_speed = 255 / 30  # Fade over ~0.5s at 60 FPS
 
         
         # All buttons on the menu
@@ -446,6 +448,7 @@ class GameStateManager:
                 self.game = BrickBlitz()
                 self.level_transition_text = f"Level {self.game.current_level}"
                 self.level_transition_timer = pygame.time.get_ticks()
+                self.transition_alpha = 0
                 new_state = STATE_LEVEL_TRANSITION
 
 
@@ -453,6 +456,7 @@ class GameStateManager:
             elif new_state == STATE_LEVEL_TRANSITION:
                 self.level_transition_text = f"Level {self.game.current_level}"
                 self.level_transition_timer = pygame.time.get_ticks()
+                self.transition_alpha = 0
             
             self.state = new_state # Update the state variable
 
@@ -615,11 +619,27 @@ class GameStateManager:
                     self.change_state(STATE_PLAYING)
                     return True
             
+            # FADING EFFECT
+            elapsed_time = pygame.time.get_ticks() - self.level_transition_timer # Time since transition started
 
-            # If no button clicked in 2 seconds, start the game anyway
-            if pygame.time.get_ticks() - self.level_transition_timer > 2000:
+            # While below 500, update transition value to get more dark (Less transparency)
+            if elapsed_time < 500:
+                self.transition_alpha = min(150, self.transition_alpha + self.fade_speed)
+
+            # After 2.5 seconds, start getting less dark (More transparency)
+            elif elapsed_time > 2500:
+                self.transition_alpha = max(0, self.transition_alpha - self.fade_speed)
+
+            # After 3 seconds, start round
+            if elapsed_time > 3000:
                 self.change_state(STATE_PLAYING)
                 return True
+
+            # PREV VERSION
+            # If no button clicked in 2 seconds, start the game anyway
+            #if pygame.time.get_ticks() - self.level_transition_timer > 2000:
+            #    self.change_state(STATE_PLAYING)
+            #    return True
         
         return True # End function after just incase
     
@@ -633,7 +653,7 @@ class GameStateManager:
         # If currently playing game and there is a game, update all the game objects
         if self.state == STATE_PLAYING and self.game:
             result = self.game.update_game_objects()
-            if result: # If there is a change of state, then change it
+            if result != STATE_PLAYING: # If there is a change of state, then change it
                 self.change_state(result)
     
 
@@ -831,7 +851,7 @@ class GameStateManager:
         Drawing the screen for transitioning between levels
         '''
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA) # Making the screen a bit transparent to make the text more visible
-        overlay.fill((0, 0, 0, 150)) # Making it semi-transparent
+        overlay.fill((0, 0, 0, int(self.transition_alpha))) # Making it semi-transparent with the fading effect
         screen.blit(overlay, (0, 0)) # Overlap on top of screen, starting from top-left corner
         
         font = get_font(64) # Getting font using helper function
