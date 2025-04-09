@@ -77,15 +77,20 @@ class Button:
         self.text_rect = self.text.get_rect(center = (self.x_pos, self.y_pos)) # Aligns rendered text so its at same spot at button itself
 
 
-    # Updating the button on screen
     def update(self, screen):
+        '''
+        Drawing the button on the screen
+        '''
         screen.blit(self.image, self.rect)
         screen.blit(self.text, self.text_rect)
 
 
 
-    # Change the colour of the button when hovered over (For effect)
     def changeColour(self, position):
+        '''
+        Changing the colour of the button based on if the users mouse is hovering over the button
+        '''
+
         if self.checkForInput(position):
             self.text = self.font.render(self.text_input, True, self.hovering_colour)
         else:
@@ -93,8 +98,11 @@ class Button:
 
 
 
-    # Check if mouse on top of button
     def checkForInput(self, position):
+        '''
+        Checking if mouse is hovering over the button, to change the colour of the button for the hovering effect
+        '''
+
         return position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom)
 
 
@@ -132,15 +140,21 @@ class Ball(GameObject):
         self.reset() # Run the reset module (Simplifies the code)
 
 
-    # Resetting the ball (Also for beginning)
     def reset(self):
+        '''
+        Resetting the ball, where it resets the ball when a new ball is spawned, or for very beginning, or for new life
+        '''
         self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         self.speed_x = BALL_SPEED * random.choice([-1, 1])
         self.speed_y = -BALL_SPEED
 
 
-    # Movement of ball
+
     def move(self):
+        '''
+        Moving the ball on the screen, where there is both movement in x and y-directions
+        Has position correction, so the ball doesn't get stuck in the walls
+        '''
         self.rect.x += self.speed_x
         self.rect.y += self.speed_y
 
@@ -158,8 +172,12 @@ class Ball(GameObject):
             self.speed_y *= -1
     
 
-    # Function with drawing ball on actual screen
+
     def draw(self):
+        '''
+        Drawing the ball on the actual screen
+        '''
+
         pygame.draw.circle(screen, RED, self.rect.center, BALL_RADIUS)
 
 
@@ -179,8 +197,13 @@ class Paddle(GameObject):
         
 
 
-    # Movement of the Paddle
+
     def move(self, keys):
+        '''
+        Moving the paddle on the screen
+        Handles player input with left and right arrows pressed by user
+        '''
+
         # If left key pressed, and already not at border of screen
         if keys[pygame.K_LEFT] and self.rect.left > 0:
             self.rect.x -= self.speed # Increase the speed left
@@ -190,8 +213,11 @@ class Paddle(GameObject):
             self.rect.x += self.speed # Increase the speed right
 
 
-    # Function for drawing paddle on actual screen
     def draw(self):
+        '''
+        Drawing the paddle on the screen
+        '''
+
         pygame.draw.rect(screen, WHITE, self.rect)
 
 
@@ -204,11 +230,20 @@ class PowerUp(GameObject):
         self.active = True # Is on the map or not
         self.speed = 2
 
+
     def move(self):
+        '''
+        Moving the powerup, where it only moves in the y-direction, so it moves downwards constantly
+        '''
+
         self.rect.y += self.speed  # Move the power-up down the screen (Down the screen is positive TOOK SO LONG TO UNDERSTAND)
 
-    # Draw the power-up on the screen
+
     def draw(self):
+        '''
+        Drawing the power-ups to the screen
+        '''
+
         if self.active:
             pygame.draw.rect(screen, RED, self.rect)
 
@@ -225,6 +260,10 @@ class Brick(GameObject):
 
     # Function for drawing brick on actual screen
     def draw(self):
+        '''
+        Drawing the bricks to the screen
+        '''
+
         if self.brick_type == "normal":
             pygame.draw.rect(screen, GREEN, self.rect) # Rectangle border
             inner_rect = self.rect.inflate(-4, -4)  # Shrink the rectangle to put an actual border
@@ -251,9 +290,18 @@ class Projectile(GameObject):
         self.speed = 7
     
     def move(self):
+        '''
+        Moving the projectile, only in the y-direction, so projectile only moves downwards
+        '''
+
         self.rect.y += self.speed
     
+
     def draw(self):
+        '''
+        Drawing the projectile to the screen
+        '''
+
         pygame.draw.circle(screen, YELLOW, self.rect.center, 5)
 
 
@@ -280,23 +328,33 @@ class BossBrick(Brick):
         }
 
 
-    # Moves only left and right
+
+
     def move(self):
+        '''
+        Boss moving, where it only moves left and right across the screen, with the y-component staying constant
+        '''
         self.rect.x += self.speed * self.direction
         if self.rect.right >= SCREEN_WIDTH or self.rect.left <= 0:
             self.direction *= -1
     
 
-    # Shoots projectile, though only after stage 2
+
     def shoot_projectile(self):
+        '''
+        Boss shooting projectiles, only after phase 2 though
+        '''
         now = pygame.time.get_ticks()
         if now - self.last_shot > 2000:  # Shoot every 2 seconds
             self.last_shot = now
             self.projectiles.append(Projectile(self.rect.centerx, self.rect.bottom))
     
 
-    # Hitting the boss with the ball
+
     def take_hit(self):
+        '''
+        Doing damage to the boss with the ball
+        '''
         self.health -= 1
         if self.health == 7:
             self.phase = 2
@@ -308,6 +366,9 @@ class BossBrick(Brick):
     
     # Drawing the boss on screen
     def draw(self):
+        '''
+        Drawing the boss object on the screen
+        '''
         pygame.draw.rect(screen, self.phase_colours[self.phase], self.rect)
         health_width = (self.width * self.health) // 10
         pygame.draw.rect(screen, (0, 255, 0), (self.rect.x, self.rect.y - 10, health_width, 5))
@@ -319,7 +380,7 @@ class BossBrick(Brick):
 
 
 
-
+# Game State Manager Class
 class GameStateManager:
     def __init__(self):
         self.state = STATE_MENU # Initial state is menu
@@ -351,8 +412,11 @@ class GameStateManager:
     
 
 
-    # Changing the state of the game function
+
     def change_state(self, new_state):
+        '''
+        Changing the game state
+        '''
         # If state is quit, then quit the game
         if new_state == "quit":
             pygame.quit()
@@ -370,8 +434,10 @@ class GameStateManager:
     
 
 
-    # Handling the events (Eg. Clicking buttons, Hovering Over Buttons, Pausing the Game, etc.)
     def handle_events(self, events):
+        '''
+        Handling all of the events in the game (Eg. Clicking Buttons, Hovering Over Buttons, Pausing the Game, etc.)
+        '''
         mouse_pos = pygame.mouse.get_pos() # Get position of mouse
         
         # If on main menu screen
@@ -529,14 +595,24 @@ class GameStateManager:
 
     # Update the game
     def update(self):
+        '''
+        Updating the game
+        '''
+
+        # If currently playing game and there is a game, update all the game objects
         if self.state == STATE_PLAYING and self.game:
             result = self.game.update_game_objects()
-            if result:
+            if result: # If there is a change of state, then change it
                 self.change_state(result)
     
 
-    # Drawing the screen compared to what screen it is on (Since inconsistent naming I had to do it this way)
+
     def draw(self):
+        '''
+        Actually drawing the screens to the screen based on what screen it is currently on
+
+        I had inconsistent naming, so had to do it the long way
+        '''
         screen.fill(BLACK) # Resetting the screen
 
         # Drawing the menu if on menu screen
@@ -578,8 +654,11 @@ class GameStateManager:
     
 
 
-    # Drawing the menu screen
+
     def draw_menu(self):
+        '''
+        Drawing the main menu screen (Background, buttons, credit)
+        '''
         screen.blit(MENU_BACKGROUND, (0, 0)) # Background picture
         
         title_text = get_font(60).render("Brick Blitz", True, MENU_TITLE_COLOUR) # Drawing the title
@@ -600,8 +679,11 @@ class GameStateManager:
 
 
 
-    # Drawing the controls screen
+
     def draw_controls(self):
+        '''
+        Drawing the controls screen with all the text
+        '''
         screen.fill(BLACK) # Background is black
         
         title_text = get_font(40).render("Controls", True, MENU_TITLE_COLOUR) # Drawing the controls title
@@ -633,8 +715,10 @@ class GameStateManager:
     
 
 
-    # Drawing the pause screen
     def draw_pause_screen(self):
+        '''
+        Drawing the screen for when player pauses the screen (By pressing escape key)
+        '''
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA) # Making the screen a bit transparent to make the text more visible IS SO COOL
         overlay.fill((0, 0, 0, 180)) # Actually filling it in with the alpha value of 180, making it semi-transparent   
         screen.blit(overlay, (0, 0)) # Overlay on top of screen, starting from top-left corner
@@ -653,8 +737,11 @@ class GameStateManager:
     
 
 
-    # Drawing the game over screen
+
     def draw_gameover_screen(self):
+        '''
+        Drawing the screen for "Game Over" when player runs out of lives -> Loses the game
+        '''
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA) # Making the screen a bit transparent to make the text more visible
         overlay.fill((0, 0, 0, 180)) # Making it semi-transparent
         screen.blit(overlay, (0, 0)) # Overlay on top of screen, starting from top-left corner
@@ -679,8 +766,10 @@ class GameStateManager:
     
 
 
-    # Drawing the win screen
     def draw_win_screen(self):
+        '''
+        Drawing the winning screen for the game
+        '''
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA) # Making the screen a bit transparent to make the text more visible
         overlay.fill((0, 0, 0, 180)) # Making it semi-transparent
         screen.blit(overlay, (0, 0)) # Overlap on top of screen, starting from top-left corner
@@ -707,8 +796,10 @@ class GameStateManager:
 
 
 
-    # Drawing the level transition screen
     def draw_level_transition(self):
+        '''
+        Drawing the screen for transitioning between levels
+        '''
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA) # Making the screen a bit transparent to make the text more visible
         overlay.fill((0, 0, 0, 150)) # Making it semi-transparent
         screen.blit(overlay, (0, 0)) # Overlap on top of screen, starting from top-left corner
@@ -751,6 +842,10 @@ class BrickBlitz:
 
     # Generating the bricks for a specific level (Initialising brick objects)
     def generate_bricks(self, level):
+        '''
+        Generating all the bricks for the levels of the game
+        '''
+
         # Level designs (0 = empty, 1 = normal, 2 = indestructible, 3 = bomb)
         level_designs = {
             1: [
@@ -818,6 +913,9 @@ class BrickBlitz:
 
     # Function to update game objects
     def update_game_objects(self):
+        '''
+        Updating all objects in the playing part of the game
+        '''
         # Moving all objects
         key_pressed = pygame.key.get_pressed()
         self.paddle.move(key_pressed) # Move paddle
@@ -898,6 +996,9 @@ class BrickBlitz:
 
     # Drawing all game objects
     def draw_game_objects(self):
+        '''
+        Drawing all the objects in the playing screen of the game
+        '''
 
         # DRAWING THE GRADIENT BACKGROUND
         for y in range(SCREEN_HEIGHT):
