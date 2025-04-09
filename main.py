@@ -21,7 +21,7 @@ POWERUP_SIZE = 20
 BALL_RADIUS = 10
 BALL_SPEED = 5
 
-# Colors
+# Colours
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -33,8 +33,8 @@ ORANGE = (255, 100, 0)
 LIGHT_ORANGE = (250, 50, 0)
 YELLOW = (255, 255, 0)
 PURPLE = (200, 50, 100)
-TEXT_COLOR = (230, 230, 250)
-MENU_TITLE_COLOR = (182, 143, 64) # Oddly specific, but I wanted an exact colour
+TEXT_COLOUR = (230, 230, 250)
+MENU_TITLE_COLOUR = (182, 143, 64) # Oddly specific, but I wanted an exact colour
 LIGHT_BLUE = (173, 216, 230)  # Light blue for button text
 HOVER_GRAY = (169, 169, 169)  # Gray for hover text
 
@@ -55,6 +55,49 @@ MENU_BACKGROUND = pygame.transform.scale(MENU_BACKGROUND, (SCREEN_WIDTH, SCREEN_
 
 # Initialise clock
 clock = pygame.time.Clock()
+
+
+
+
+# Button class
+class Button:
+    def __init__(self, pos, text_input, font, base_colour, hovering_colour):
+        self.x_pos, self.y_pos = pos # Button position
+        self.font = font
+        self.base_colour, self.hovering_colour = base_colour, hovering_colour
+        self.text_input = text_input
+        self.text = self.font.render(self.text_input, True, self.base_colour)
+
+        self.image = pygame.Surface((300, 80), pygame.SRCALPHA) # Surface for button background
+        pygame.draw.rect(self.image, (255, 255, 255, 30), (0, 0, 300, 80), border_radius=15) # Draws semi-transparent white background for button
+        pygame.draw.rect(self.image, (255, 255, 255, 100), (0, 0, 300, 80), 2, border_radius=15) # Draws the border of the button
+
+        self.rect = self.image.get_rect(center = (self.x_pos, self.y_pos)) # Rect object for button, also easier to make collisions with mouse
+        self.text_rect = self.text.get_rect(center = (self.x_pos, self.y_pos)) # Aligns rendered text so its at same spot at button itself
+
+
+    # Updating the button on screen
+    def update(self, screen):
+        screen.blit(self.image, self.rect)
+        screen.blit(self.text, self.text_rect)
+
+
+
+    # Change the colour of the button when hovered over (For effect)
+    def changeColour(self, position):
+        if self.checkForInput(position):
+            self.text = self.font.render(self.text_input, True, self.hovering_colour)
+        else:
+            self.text = self.font.render(self.text_input, True, self.base_colour)
+
+
+
+    # Check if mouse on top of button
+    def checkForInput(self, position):
+        return position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom)
+
+
+
 
 
 # Base 'GameObject' Class
@@ -188,7 +231,7 @@ class Brick(GameObject):
             pygame.draw.rect(screen, LIGHT_GRAY, inner_rect)
 
         elif self.brick_type == "bomb":
-            pygame.draw.rect(screen, ORANGE, self.rect)  # Orange color
+            pygame.draw.rect(screen, ORANGE, self.rect)  # Orange colour
             inner_rect = self.rect.inflate(-4, -4)
             pygame.draw.rect(screen, LIGHT_ORANGE, inner_rect)
 
@@ -225,7 +268,7 @@ class BossBrick(Brick):
         self.direction = 1
         self.projectiles = []
         self.last_shot = 0
-        self.phase_colors = {
+        self.phase_colours = {
             1: (200, 50, 50),    # Red
             2: (200, 100, 50),   # Orange
             3: PURPLE            # Purple
@@ -260,7 +303,7 @@ class BossBrick(Brick):
     
     # Drawing the boss on screen
     def draw(self):
-        pygame.draw.rect(screen, self.phase_colors[self.phase], self.rect)
+        pygame.draw.rect(screen, self.phase_colours[self.phase], self.rect)
         health_width = (self.width * self.health) // 10
         pygame.draw.rect(screen, (0, 255, 0), (self.rect.x, self.rect.y - 10, health_width, 5))
 
