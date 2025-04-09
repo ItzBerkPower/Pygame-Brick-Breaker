@@ -33,6 +33,10 @@ ORANGE = (255, 100, 0)
 LIGHT_ORANGE = (250, 50, 0)
 YELLOW = (255, 255, 0)
 PURPLE = (200, 50, 100)
+TEXT_COLOR = (230, 230, 250)
+MENU_TITLE_COLOR = (182, 143, 64) # Oddly specific, but I wanted an exact colour
+LIGHT_BLUE = (173, 216, 230)  # Light blue for button text
+HOVER_GRAY = (169, 169, 169)  # Gray for hover text
 
 
 # Game State Constants
@@ -41,6 +45,13 @@ STATE_PLAYING = 1
 STATE_PAUSED = 2
 STATE_GAMEOVER = 3
 STATE_WIN = 4
+STATE_CONTROLS = 5
+STATE_LEVEL_TRANSITION = 6
+
+
+# Load background image
+MENU_BACKGROUND = pygame.image.load("menu_background.png").convert()
+MENU_BACKGROUND = pygame.transform.scale(MENU_BACKGROUND, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Initialise clock
 clock = pygame.time.Clock()
@@ -60,9 +71,6 @@ class GameObject:
 
     def check_collision(self, other_object):
         return self.rect.colliderect(other_object.rect)
-
-
-
 
 
 
@@ -109,6 +117,8 @@ class Ball(GameObject):
 
 
 
+
+
 # Paddle Class
 class Paddle(GameObject):
     # Initialising Paddle Object
@@ -138,6 +148,7 @@ class Paddle(GameObject):
 
 
 
+
 # Power-Up Class
 class PowerUp(GameObject):
     def __init__(self, x, y):
@@ -152,6 +163,7 @@ class PowerUp(GameObject):
     def draw(self):
         if self.active:
             pygame.draw.rect(screen, RED, self.rect)
+
 
 
 
@@ -251,8 +263,6 @@ class BossBrick(Brick):
         pygame.draw.rect(screen, self.phase_colors[self.phase], self.rect)
         health_width = (self.width * self.health) // 10
         pygame.draw.rect(screen, (0, 255, 0), (self.rect.x, self.rect.y - 10, health_width, 5))
-
-
 
 
 
@@ -630,9 +640,11 @@ def main():
                 powerups = [] # Reset power-ups
 
 
+
             else:
                 display_message("YOU WIN!")
                 running = False
+
 
 
         # Update display
