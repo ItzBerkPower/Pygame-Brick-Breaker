@@ -130,10 +130,13 @@ class GameObject:
         self.rect = pygame.Rect(x, y, width, height) # Add rect for collision detection
 
     def draw(self):
-        pass # Will be overridden by child classes
+        raise NotImplementedError("Subclasses must implement draw()")
+        # pass
 
     def move(self):
-        pass # Will be overridden by child classes
+        # Not this, as the brick doesn't move
+        # raise NotImplementedError("Subclasses must implement move()")
+        pass
 
     def check_collision(self, other_object):
         return self.rect.colliderect(other_object.rect)
@@ -855,10 +858,14 @@ class BrickBlitz:
         self.paddle = Paddle()
         self.balls = [Ball(SCREEN_WIDTH//2, SCREEN_HEIGHT//2)]
         self.powerups = []
-        self.current_level = 5
+        self.current_level = 1
         self.active_bricks = self.generate_bricks(self.current_level)
         self.score = 0
         self.lives = 3
+
+        self.all_game_objects = []
+        
+
 
 
     # Generating the bricks for a specific level (Initialising brick objects)
@@ -940,6 +947,7 @@ class BrickBlitz:
         # Moving all objects
         key_pressed = pygame.key.get_pressed()
         self.paddle.move(key_pressed) # Move paddle
+
 
         for ball in self.balls[:]:
             ball.move() # Move all the balls
@@ -1027,9 +1035,21 @@ class BrickBlitz:
             pygame.draw.line(screen, color, (0, y), (SCREEN_WIDTH, y))
 
 
+        self.all_game_objects = []
+        self.all_game_objects.extend(self.balls)
+        self.all_game_objects.append(self.paddle)
+        self.all_game_objects.extend(self.powerups)
+        self.all_game_objects.extend(self.active_bricks)
+        
+
+        # Polymorphic drawing - handles all objects the same way
+        for obj in self.all_game_objects:
+            obj.draw()
+
+
         # Draw all active bricks on screen
         for brick in self.active_bricks:
-            brick.draw()
+            #brick.draw()
 
             if isinstance(brick, BossBrick):
                 for projectile in brick.projectiles:
@@ -1037,17 +1057,17 @@ class BrickBlitz:
 
 
         # Draw all balls on screen
-        for ball in self.balls:
-            ball.draw()
+        #for ball in self.balls:
+        #    ball.draw()
 
 
         # Draw all powerups on screen
-        for powerup in self.powerups:
-            powerup.draw()
+        #for powerup in self.powerups:
+        #    powerup.draw()
 
 
         # Draw paddle on screen
-        self.paddle.draw()
+        #self.paddle.draw()
 
 
         # Writing all the texts on screen
@@ -1268,7 +1288,7 @@ def main():
                 state_manager.change_state(STATE_MENU) # Attempt to recover by resetting the game state
 
 
-    
+    # Catch any potential errors
     except Exception as e:
         print(f"Fatal error: {e}") # Print fatal error to terminal
 
@@ -1280,6 +1300,7 @@ def main():
 
         pygame.display.flip()
         pygame.time.wait(3000)
+
 
     # Quit the game
     finally:
