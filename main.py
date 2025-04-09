@@ -112,7 +112,14 @@ def get_font(size):
     '''
     Font used for all text in game, defined here
     '''
-    return pygame.font.SysFont("Comic Sans MS", size)
+
+    # Using try-except block in case the font cannot be found
+    try:
+        return pygame.font.SysFont("Comic Sans MS", size)
+    
+    except:
+        print("Warning: Comic Sans MS font not found, using default font")
+        return pygame.font.SysFont(None, size)
 
 
 
@@ -420,20 +427,30 @@ class GameStateManager:
         '''
         Changing the game state
         '''
-        # If state is quit, then quit the game
-        if new_state == "quit":
-            pygame.quit()
-            sys.exit()
         
+        # Handle errors gracefully
+        try:
+            # If state is quit, then quit the game
+            if new_state == "quit":
+                pygame.quit()
+                sys.exit()
+            
 
-        # If state is the playing state, but game hasn't started yet, then create a new game
-        if new_state == STATE_PLAYING and not self.game:
-            self.game = BrickBlitz()
-            self.level_transition_text = f"Level {self.game.current_level}"
-            self.level_transition_timer = pygame.time.get_ticks()
-            new_state = STATE_LEVEL_TRANSITION
-        
-        self.state = new_state # Update the state variable
+            # If state is the playing state, but game hasn't started yet, then create a new game
+            if new_state == STATE_PLAYING and not self.game:
+                self.game = BrickBlitz()
+                self.level_transition_text = f"Level {self.game.current_level}"
+                self.level_transition_timer = pygame.time.get_ticks()
+                new_state = STATE_LEVEL_TRANSITION
+            
+            self.state = new_state # Update the state variable
+
+
+        except Exception as e:
+            print(f"Error changing state: {e}")
+            self.state = STATE_MENU # Go back to menu state
+            self.game = None # Delete the current game
+            
     
 
 
@@ -820,6 +837,7 @@ class GameStateManager:
         instruction_text = instruction_font.render("Press ENTER to continue", True, WHITE)
         instruction_rect = instruction_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 80))
         screen.blit(instruction_text, instruction_rect)
+
 
 
 
@@ -1223,29 +1241,57 @@ def event_handling():
 
 # Main game function
 def main():
-
-    state_manager = GameStateManager()
-    running = True
-    
-
-    # Game loop
-    running = True
-
-    while running:
-        events = pygame.event.get()
-        running = state_manager.handle_events(events)
-
-
-        state_manager.update()
-        state_manager.draw()
+    try:
+        state_manager = GameStateManager()
+        running = True
         
 
-        clock.tick(60)
+        # Game loop
+        running = True
+
+        while running:
+            # Catching any errors that run in while loop
+            try:
+                events = pygame.event.get()
+                running = state_manager.handle_events(events)
+
+
+                state_manager.update()
+                state_manager.draw()
+                
+
+                clock.tick(60)
+
+
+            except Exception as e:
+                print(f"Error during game loop: {e}")
+                state_manager.change_state(STATE_MENU) # Attempt to recover by resetting the game state
+
+
+    
+    except Exception as e:
+        print(f"Fatal error: {e}") # Print fatal error to terminal
+
+        # Show error message to user before quitting
+        screen.fill(BLACK)
+        font = pygame.font.SysFont(None, 36)
+        error_text = font.render("A fatal error occurred. The game will now close.", True, RED)
+        screen.blit(error_text, (SCREEN_WIDTH//2 - error_text.get_width()//2, SCREEN_HEIGHT//2))
+
+        pygame.display.flip()
+        pygame.time.wait(3000)
+
+    # Quit the game
+    finally:
+        pygame.quit()
+        sys.exit()
+        
 
 
     # Quit Pygame
     pygame.quit()
     sys.exit()
+
 
 
 # Running the game
