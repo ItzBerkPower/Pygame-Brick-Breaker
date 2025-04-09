@@ -538,28 +538,38 @@ class GameStateManager:
 
     # Drawing the screen compared to what screen it is on (Since inconsistent naming I had to do it this way)
     def draw(self):
-        screen.fill(BLACK)
+        screen.fill(BLACK) # Resetting the screen
+
+        # Drawing the menu if on menu screen
         if self.state == STATE_MENU:
             self.draw_menu()
 
+        # Drawing the controls if on controls screen
         elif self.state == STATE_CONTROLS:
             self.draw_controls()
 
+        # Drawing the game if on game screen
         elif self.state == STATE_PLAYING and self.game:
             self.game.draw()
 
+        # Deawing the paused screen if game is paused
         elif self.state == STATE_PAUSED and self.game:
             self.game.draw()
             self.draw_pause_screen()
 
+        # Drawing the game over screen if game is over (Lost)
         elif self.state == STATE_GAMEOVER and self.game:
             self.game.draw()
             self.draw_gameover_screen()
 
+
+        # Drawing the game over screen if game is over (Won)
         elif self.state == STATE_WIN and self.game:
             self.game.draw()
             self.draw_win_screen()
 
+
+        # Drawing the level transition screen
         elif self.state == STATE_LEVEL_TRANSITION and self.game:
             self.game.draw()
             self.draw_level_transition()
@@ -577,7 +587,7 @@ class GameStateManager:
         title_rect = title_text.get_rect(center=(SCREEN_WIDTH//2, 100)) # Creating rect object for title
         screen.blit(title_text, title_rect) # Printing title to screen
         
-        # Updating all the buttons, to check if they clicked or hovered over
+        # Drawing all the menu buttons to the screen
         for button in self.menu_buttons:
             button.update(screen)
         
@@ -619,7 +629,7 @@ class GameStateManager:
             screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, 150 + i * 40))  # Moved up to y=150
         
 
-        # Update the back button, to check if they clicked or hovered over
+        # Drawing the back button to the screen
         self.back_button.update(screen)
     
 
@@ -638,7 +648,7 @@ class GameStateManager:
         screen.blit(text, text_rect)
         
 
-        # Updating all the buttons, to check if they clicked or hovered over
+        # Drawing the two buttons on the pause menu to the screen
         for button in self.pause_buttons:
             button.update(screen)
     
@@ -664,7 +674,7 @@ class GameStateManager:
         screen.blit(score_text, score_rect)
         
 
-        # Updating all the buttons, to check if they clicked or hovered over
+        # Drawing the buttons on the game over screen to the screen (Lost)
         for button in self.game_over_buttons:
             button.update(screen)
     
@@ -691,7 +701,7 @@ class GameStateManager:
         screen.blit(score_text, score_rect)
         
 
-        # Updating all the buttons, to check if they clicked or hovered over
+        # Drawing the buttons on the game over screen to the screen (Won)
         for button in self.game_over_buttons:
             button.update(screen)
     
