@@ -54,6 +54,33 @@ Player needs to first setup their environment, where they need to;
 After that, the player needs to;
 1. Download the latest release of the game off Github
 2. Player needs to extract the ZIP file
-3. Then finally run 'python main.py' in extracted folder
+3. Then finally run **'python main.py'** in extracted folder
 
 **Note:** There are other ways of running the game, this is just the recommended method.
+
+
+
+## 🎯Usage Guide
+
+Controls can be found on the 'Controls' page from the main menu, where the main controls are
+- **Moving Paddle**: Arrow Keys (Left and Right)
+- **Pause / Resume**: ESC
+- **Menu Navigation**: Mouse
+- **Select Menu Option**: Click or ENTER
+
+### 🎮 Gameplay Guide
+1. **Break Bricks**: Hit and break all breakable bricks to advance
+2. **Power-Ups**: Some bricks drop power-ups, where once claimed with your paddle, gives you extra balls
+3. **Boss Fight**: Final level has a boss with;
+    - Health bar
+    - Multiple attack phases
+    - Projectile attacks
+
+
+### 📊 Scoring System
+- **Normal Brick** = 10 Points
+- **Bomb Brick** = 20 Points
+- **Boss Hit** = 5 Points
+- **Breaking Blocks Adjacent From Bomb** = 5 Points
+
+
