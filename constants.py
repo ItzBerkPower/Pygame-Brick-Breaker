@@ -1,0 +1,51 @@
+# constants.py - The constants for the game
+
+import pygame
+
+# Screen Constants
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+
+# Brick Constants
+BRICK_WIDTH = SCREEN_WIDTH // 10
+BRICK_HEIGHT = 30
+
+# Paddle Constants
+PADDLE_WIDTH, PADDLE_HEIGHT = 100, 20
+PADDLE_SPEED = 8
+
+# Powerup Constants
+POWERUP_SIZE = 20
+
+# Ball Constants
+BALL_RADIUS = 10
+BALL_SPEED = 5
+
+# Colours
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+BLACK = (0, 0, 0)
+GRAY = (100, 100, 100)
+LIGHT_GRAY = (150, 150, 150)
+ORANGE = (255, 100, 0)
+LIGHT_ORANGE = (250, 50, 0)
+YELLOW = (255, 255, 0)
+PURPLE = (200, 50, 100)
+TEXT_COLOUR = (230, 230, 250)
+MENU_TITLE_COLOUR = (182, 143, 64)
+LIGHT_BLUE = (173, 216, 230)
+HOVER_GRAY = (169, 169, 169)
+
+# Game State Constants
+STATE_MENU = 0
+STATE_PLAYING = 1
+STATE_PAUSED = 2
+STATE_GAMEOVER = 3
+STATE_WIN = 4
+STATE_CONTROLS = 5
+STATE_LEVEL_TRANSITION = 6
+
+
+# screen variable
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
