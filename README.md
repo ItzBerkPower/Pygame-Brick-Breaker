@@ -1,6 +1,6 @@
 # 🎮 Brick Blitz - A Modern Breakout Game
 
-## Project Overview
+## 🚀 Project Overview
 
 Brick Blitz is a polished Python implementation of the classic Breakout arcade game with modern features and visual enhancements. Built with Pygame, it offers smooth gameplay with progressive difficulty and special power-ups.
 
@@ -8,10 +8,10 @@ Brick Blitz is a polished Python implementation of the classic Breakout arcade g
 ### Key Features of The Game
 - **5 Challenging Levels** with unique brick patterns
 - **Special Brick Types**:
-  - 💥 Bomb bricks (destroy adjacent bricks)
+  - 💥 Bomb bricks (Destroys adjacent bricks)
   - 🛡️ Indestructible bricks
-  - 💎 Normal bricks (with power-up chances)
-- **Epic Boss Battle** with multiple phases
+  - 💎 Normal bricks (With chances of spawning power-ups)
+- **Boss Battle** with multiple phases
 - **Visual Effects**:
   - Gradient backgrounds
   - Smooth animations
@@ -20,3 +20,39 @@ Brick Blitz is a polished Python implementation of the classic Breakout arcade g
   - Main menu
   - Pause screen
   - Game over/win screens
+
+
+## 🛠️ Setup Instructions
+
+### Technical Requirements
+- **Minimum:**
+    - CPU: Dual-Core processor
+    - GPU: Integrated Graphics, or a dedicated GPU with DirectX 11 support
+    - RAM: 2 GB
+    - Storage: 200 MB available space (Excluding the installation of IDE and libraries)
+
+- **Recommended**
+    - CPU: Quad-Core processor
+    - GPU: Dedicated GPU with DirectX 12 support
+    - RAM: 4 GB or more
+    - Storage: 500 MB available space (Excluding the installation of IDE and libraries)
+
+
+### Prerequisites
+- Requires Python version 3.8 or higher
+- Requires Pygame version 2.0 or higher
+
+
+### How To Run Project
+
+Player needs to first setup their environment, where they need to;
+    1. **Install Python**: Ensure Python 3.x is installed onto system
+    2. **Install Pygame**: Use the 'pip' module that comes with Python to install PyGame. Can be done by running 'pip install pygame' in Terminal / Command Prompt
+    3. **Setup IDE**: Choose an IDE (Integrated Development Environment) like Pycharm, Visual Studio Code, or even simpler editor like Sublime Text
+
+After that, the player needs to;
+    1. Download the latest release of the game off Github
+    2. Player needs to extract the ZIP file
+    3. Then finally run 'python main.py' in extracted folder
+
+**Note:** There are other ways of running the game, this is just the recommended method.
