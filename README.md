@@ -43,7 +43,6 @@ Brick Blitz is a polished Python implementation of the classic Breakout arcade g
 - Requires Python version 3.8 or higher
 - Requires Pygame version 2.0 or higher
 
-####
 ### How To Run Project
 
 Player needs to first setup their environment, where they need to;
@@ -84,3 +83,36 @@ Controls can be found on the 'Controls' page from the main menu, where the main 
 - **Breaking Blocks Adjacent From Bomb** = 5 Points
 
 
+
+## 📜 License
+Under MIT Licence
+
+
+
+## 🤝 Contributing
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+
+## 📕Credits & Acknowledgements
+**Primary Developer**  
+Berkay Topal - Project creator and lead developer  
+
+**Special Thanks To**
+- OpenAI's ChatGPT for algorithmic understanding
+- High-Flyer's DeepSeek for ideas and code formatting
+- Elon Musk's Grok for error fixing
+
+
+**Assets Attribution**
+- Background Image: Vecteezy (https://www.vecteezy.com/photo/23820311-cracked-dark-blue-cement-texture-background-generative-ai)
+
+
+**Inspired by**
+The classic 1976 Atari Breakout game designed by Nolan Bushnell and Steve Bristow  
+
+---
+
+*This project was developed for educational purposes and is not affiliated with or endorsed by the original Breakout creators.*
