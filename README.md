@@ -6,16 +6,19 @@ Brick Blitz is a polished Python implementation of the classic Breakout arcade g
 
 
 ### Key Features of The Game
-- **5 Challenging Levels** with unique brick patterns
+- **5 challenging levels** with unique brick patterns
+
 - **Special Brick Types**:
   - 💥 Bomb bricks (Destroys adjacent bricks)
   - 🛡️ Indestructible bricks
   - 💎 Normal bricks (With chances of spawning power-ups)
 - **Boss Battle** with multiple phases
+
 - **Visual Effects**:
   - Gradient backgrounds
   - Smooth animations
-  - Particle effects
+  - Fading effects between levels
+
 - **Full Game State Management**:
   - Main menu
   - Pause screen
