@@ -1,9 +1,9 @@
 # 🎮 Brick Blitz - A Modern Breakout Game
 
 ## Project Overview
-\
+
 Brick Blitz is a polished Python implementation of the classic Breakout arcade game with modern features and visual enhancements. Built with Pygame, it offers smooth gameplay with progressive difficulty and special power-ups.
-\
+
 
 ### Key Features of The Game
 - **5 Challenging Levels** with unique brick patterns
