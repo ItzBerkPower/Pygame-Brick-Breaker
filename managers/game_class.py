@@ -25,7 +25,7 @@ class BrickBlitz:
         self.paddle = Paddle()
         self.balls = [Ball(SCREEN_WIDTH//2, SCREEN_HEIGHT//2)]
         self.powerups = []
-        self.current_level = 5
+        self.current_level = 4
         self.active_bricks = self.generate_bricks(self.current_level)
         self.score = 0
         self.lives = 3
@@ -44,8 +44,8 @@ class BrickBlitz:
         # Level designs (0 = empty, 1 = normal, 2 = indestructible, 3 = bomb)
         level_designs = {
             1: [
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -67,7 +67,7 @@ class BrickBlitz:
             4: [
                 [3, 1, 3, 1, 3, 1, 3, 1, 3, 1],
                 [1, 3, 1, 3, 1, 3, 1, 3, 1, 3],
-                [2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+                [3, 2, 3, 2, 3, 2, 3, 2, 3, 2],
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                 [3, 1, 3, 1, 3, 1, 3, 1, 3, 1]
             ]
