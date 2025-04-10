@@ -111,7 +111,7 @@ Berkay Topal - Project creator and lead developer
 
 
 **Inspired by**
-The classic 1976 Atari Breakout game designed by Nolan Bushnell and Steve Bristow  
+- The classic 1976 Atari Breakout game designed by Nolan Bushnell and Steve Bristow  
 
 ---
 
