@@ -8,7 +8,7 @@ import sys
 
 
 # Load background image
-MENU_BACKGROUND = pygame.image.load("menu_background.png").convert()
+MENU_BACKGROUND = pygame.image.load("assets/menu_background.png").convert()
 MENU_BACKGROUND = pygame.transform.scale(MENU_BACKGROUND, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Game State Manager Class

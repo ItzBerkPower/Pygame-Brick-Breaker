@@ -3,7 +3,7 @@
 import pygame
 import sys
 
-from models.game_state_manager import GameStateManager
+from managers.game_state_manager import GameStateManager
 from constants import *
 
 pygame.init() # Initialise pygame
@@ -11,8 +11,6 @@ pygame.init() # Initialise pygame
 # Setting screen
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 pygame.display.set_caption("Breakout Game")
-
-
 
 
 # Initialise clock
@@ -28,6 +26,8 @@ def main():
 
         # Game loop
         running = True
+
+
 
         while running:
             # Catching any errors that run in while loop
@@ -48,6 +48,7 @@ def main():
                 state_manager.change_state(STATE_MENU) # Attempt to recover by resetting the game state
 
 
+
     # Catch any potential errors
     except Exception as e:
         print(f"Fatal error: {e}") # Print fatal error to terminal
@@ -60,6 +61,7 @@ def main():
 
         pygame.display.flip()
         pygame.time.wait(3000)
+
 
 
     # Quit the game

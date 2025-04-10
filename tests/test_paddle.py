@@ -1,15 +1,23 @@
+# tests/test_paddle.py - TestPaddle Class
+
 import unittest
 import pygame
+import os
+import sys
 from pygame.locals import K_LEFT, K_RIGHT
 
-# Import Paddle class and 'SCREEN_WIDTH' constant from game code 
-from main import Paddle, SCREEN_WIDTH, SCREEN_HEIGHT
+sys.path.insert(1, "/".join(os.path.realpath(__file__).split("/")[0:-2]))
+
+from models.paddle import Paddle
+from constants import *
+
+
 
 class TestPaddle(unittest.TestCase):
     # Initialise class
     def setUp(self):
         pygame.init() # Initialize pygame (required for testing)
-        self.paddle = Paddle((SCREEN_WIDTH - 100) // 2, SCREEN_HEIGHT - 30, 100, 20, 8) # Same initialisation as actual game
+        self.paddle = Paddle() # Same initialisation as actual game
 
     # Testing for paddle moving left, which is done by pressing left arrow key
     def test_move_left(self):
