@@ -3,7 +3,7 @@
 from constants import *
 from models.button import Button
 from utils.get_font import get_font
-from models.game_class import BrickBlitz
+from managers.game_class import BrickBlitz
 import sys
 
 
