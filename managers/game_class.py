@@ -86,11 +86,12 @@ class BrickBlitz:
         
         for row_idx, row in enumerate(design):
             for col_idx, brick_type_code in enumerate(row):
+                # Empty space
                 if brick_type_code == 0:
                     continue
                 
                 x = col_idx * BRICK_WIDTH
-                y = row_idx * BRICK_HEIGHT  # Start from top with no gap
+                y = row_idx * BRICK_HEIGHT
                 
                 if brick_type_code == 1:
                     brick = Brick(x, y, "normal")
@@ -160,7 +161,6 @@ class BrickBlitz:
 
         # Level completed condition
         if self.check_level_complete():
-            # STUD: ACCOUNTING FOR BOSS LEVEL
             if self.current_level < 4:
                 self.current_level += 1 # Increase level
                 self.active_bricks = self.generate_bricks(self.current_level)  # Generate next level bricks
@@ -169,7 +169,7 @@ class BrickBlitz:
                 return STATE_LEVEL_TRANSITION
 
 
-            # If level 5, just display a "To be continued..." message, as will most likely be a boss fight
+            # Boss fight (No real need for this)
             elif self.current_level == 4:
                 self.current_level = 5 # Go to level 5
                 self.active_bricks = self.generate_bricks(self.current_level) # Generate the next level bricks
@@ -221,9 +221,6 @@ class BrickBlitz:
             if isinstance(brick, BossBrick):
                 for projectile in brick.projectiles:
                     projectile.draw()
-
-
-
 
 
         # Draw all balls on screen
@@ -293,18 +290,24 @@ class BrickBlitz:
         for brick in self.active_bricks[:]:
             if ball.rect.colliderect(brick.rect):
                 # Changing direction of ball, but making sure ball doesn't get bricks on any side / Go through them
+
+                # Collision with ball and top of brick
                 if abs(ball.rect.bottom - brick.rect.top) < 10 and ball.speed_y > 0:
                     ball.speed_y *= -1
                     ball.rect.bottom = brick.rect.top
 
+                # Collision with ball and bottom of brick
                 elif abs(ball.rect.top - brick.rect.bottom) < 10 and ball.speed_y < 0:
                     ball.speed_y *= -1
                     ball.rect.top = brick.rect.bottom
 
+                # Collision with ball and left of brick
                 elif abs(ball.rect.right - brick.rect.left) < 10 and ball.speed_x > 0:
                     ball.speed_x *= -1
+        
                     ball.rect.right = brick.rect.left
 
+                # Collision with ball and right of brick
                 elif abs(ball.rect.left - brick.rect.right) < 10 and ball.speed_x < 0:
                     ball.speed_x *= -1
                     ball.rect.left = brick.rect.right
@@ -336,7 +339,7 @@ class BrickBlitz:
                     self.active_bricks.remove(brick) # Remove original brick
                     score += 20 # Increase score (Higher because bomb block)
 
-                    # Find and remove the adjance bricks
+                    # Find and remove the adjacent bricks
                     for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # All positions (Up, down, left, right)
                         for other_brick in self.active_bricks[:]: # Loop through all the bricks to find adjacent bricks
                             if (other_brick.rect.x == brick.rect.x + (dx  *BRICK_WIDTH) and other_brick.rect.y == brick.rect.y + (dy * BRICK_HEIGHT) and other_brick.brick_type != "indestructible"): # If the other brick is one of the adjacent bricks

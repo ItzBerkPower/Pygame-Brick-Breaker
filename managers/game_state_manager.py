@@ -63,7 +63,7 @@ class GameStateManager:
 
             # If state is the playing state, but game hasn't started yet, then create a new game
             if new_state == STATE_PLAYING and not self.game:
-                self.game = BrickBlitz()
+                self.game = BrickBlitz() # Create new instane of game, hence creating a new game
                 self.level_transition_text = f"Level {self.game.current_level}"
                 self.level_transition_timer = pygame.time.get_ticks()
                 self.transition_alpha = 0
@@ -76,7 +76,8 @@ class GameStateManager:
                 self.level_transition_timer = pygame.time.get_ticks()
                 self.transition_alpha = 0
             
-            self.state = new_state # Update the state variable
+            self.state = new_state # Update the state variable (MAIN IDEA OF WHOLE FUNCTION)
+            # The if statements above are for special cases
 
 
         except Exception as e:
@@ -90,6 +91,8 @@ class GameStateManager:
     def handle_events(self, events):
         '''
         Handling all of the events in the game (Eg. Clicking Buttons, Hovering Over Buttons, Pausing the Game, etc.)
+
+        All to do with the mouse
         '''
         mouse_pos = pygame.mouse.get_pos() # Get position of mouse
         
@@ -106,7 +109,7 @@ class GameStateManager:
                     return False
                 
 
-
+                # If user clicks mouse
                 if event.type == pygame.MOUSEBUTTONDOWN:
 
                     # If mouse button on "Play" button, change state to actual game
@@ -185,7 +188,7 @@ class GameStateManager:
                         return True
                     
 
-                    # If on "Main Menu" button, go back to main menu
+                    # If on "Main Menu" button, go back to main menu, remove current game (Have to restart if click Play again)
                     if self.pause_buttons[1].checkForInput(mouse_pos):
                         self.game = None
                         self.change_state(STATE_MENU)

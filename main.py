@@ -23,11 +23,8 @@ def main():
         state_manager = GameStateManager()
         running = True
         
-
         # Game loop
         running = True
-
-
 
         while running:
             # Catching any errors that run in while loop
@@ -35,13 +32,10 @@ def main():
                 events = pygame.event.get()
                 running = state_manager.handle_events(events)
 
-
                 state_manager.update()
                 state_manager.draw()
                 
-
                 clock.tick(60)
-
 
             except Exception as e:
                 print(f"Error during game loop: {e}")
@@ -63,13 +57,11 @@ def main():
         pygame.time.wait(3000)
 
 
-
     # Quit the game
     finally:
         pygame.quit()
         sys.exit()
         
-
 
     # Quit Pygame
     pygame.quit()
